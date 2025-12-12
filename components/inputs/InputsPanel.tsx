@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+
 import { NumericField } from "./NumericField";
 import { SelectField } from "./SelectField";
 import { SectionHeader } from "./SectionHeader";
@@ -63,6 +64,8 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
             value={draft.initialDeposit}
             onChange={(val) => updateField("initialDeposit", val)}
           />
+
+          {/* Interest rate quick-pick buttons with tooltip */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Label htmlFor="interestRate">Annual Interest Rate (%)</Label>
@@ -86,12 +89,16 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
               })}
             </div>
           </div>
+
           <SelectField
             id="compounding"
             label="Compounding Frequency"
             value={draft.compounding}
             onValueChange={(val) => updateField("compounding", val as Compounding)}
-            options={[{ value: "monthly", label: "Monthly" }, { value: "yearly", label: "Yearly" }]}
+            options={[
+              { value: "monthly", label: "Monthly" },
+              { value: "yearly", label: "Yearly" }
+            ]}
             tooltip="How often interest is added to your balance."
           />
         </div>
@@ -109,8 +116,13 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
             id="recurringFrequency"
             label="Contribution Frequency"
             value={draft.recurringFrequency}
-            onValueChange={(val) => updateField("recurringFrequency", val as ContributionFrequency)}
-            options={[{ value: "monthly", label: "Monthly" }, { value: "yearly", label: "Yearly" }]}
+            onValueChange={(val) =>
+              updateField("recurringFrequency", val as ContributionFrequency)
+            }
+            options={[
+              { value: "monthly", label: "Monthly" },
+              { value: "yearly", label: "Yearly" }
+            ]}
           />
           <NumericField
             id="recurringYears"
