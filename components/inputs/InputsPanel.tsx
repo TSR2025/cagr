@@ -20,6 +20,8 @@ const CONTRIBUTION_FREQUENCIES: { value: ContributionFrequency; label: string }[
   { value: "yearly", label: "Yearly" }
 ];
 
+const INTEREST_RATE_OPTIONS = [3, 5, 7, 10];
+
 interface InputsPanelProps {
   inputs: Inputs;
   onChange: (inputs: Inputs) => void;
@@ -67,14 +69,30 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
             value={draft.initialDeposit}
             onChange={(val) => updateField("initialDeposit", val)}
           />
-          <NumericField
-            id="interestRate"
-            label="Annual Interest Rate (%)"
-            value={draft.interestRate}
-            step={0.1}
-            onChange={(val) => updateField("interestRate", val)}
-            tooltip="Average annual return you expect to earn."
-          />
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-medium text-slate-600">Annual Interest Rate</Label>
+            </div>
+            <div className="flex gap-2" role="group" aria-label="Annual interest rate">
+              {INTEREST_RATE_OPTIONS.map((option) => {
+                const isSelected = draft.interestRate === option;
+
+                return (
+                  <Button
+                    key={option}
+                    type="button"
+                    variant={isSelected ? "secondary" : "outline"}
+                    className="flex-1"
+                    aria-pressed={isSelected}
+                    onClick={() => updateField("interestRate", option)}
+                  >
+                    {option}%
+                  </Button>
+                );
+              })}
+            </div>
+            <p className="text-sm text-slate-600">Average annual return you expect to earn.</p>
+          </div>
           <SelectField
             id="compounding"
             label="Compounding Frequency"
