@@ -68,23 +68,8 @@ export function MilestoneTable({ data }: MilestoneTableProps) {
               wrapperStyle={{ paddingTop: 4 }}
               formatter={(value) => <span className="text-xs text-slate-600">{value}</span>}
             />
-            <Bar dataKey="totalContributions" name="Contributions" stackId="balance" fill="#0ea5e9" radius={[4, 4, 0, 0]}>
-              <LabelList
-                dataKey="totalContributions"
-                position="inside"
-                formatter={(value: number) => formatCompactCurrency(value)}
-                fill="#0f172a"
-                fontSize={12}
-              />
-            </Bar>
+            <Bar dataKey="totalContributions" name="Contributions" stackId="balance" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
             <Bar dataKey="totalInterest" name="Growth" stackId="balance" fill="#f59e0b" radius={[4, 4, 0, 0]}>
-              <LabelList
-                dataKey="totalInterest"
-                position="inside"
-                formatter={(value: number) => formatCompactCurrency(value)}
-                fill="#0f172a"
-                fontSize={12}
-              />
               <LabelList
                 dataKey="balance"
                 position="top"
