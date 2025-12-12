@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-[#F8FAFC] text-slate-800 font-sans;
+}
+
+.card-shadow {
+  box-shadow: 0 20px 60px -40px rgba(15, 23, 42, 0.35);
+}
+
+.table-scroll {
+  @apply w-full overflow-x-auto;
+}
