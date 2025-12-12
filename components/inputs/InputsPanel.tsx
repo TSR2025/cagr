@@ -73,7 +73,7 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
             <div className="flex items-center gap-2">
               <Label className="text-sm font-medium text-slate-600">Annual Interest Rate</Label>
             </div>
-            <div className="grid grid-cols-2 gap-2" role="group" aria-label="Annual interest rate">
+            <div className="flex gap-2" role="group" aria-label="Annual interest rate">
               {INTEREST_RATE_OPTIONS.map((option) => {
                 const isSelected = draft.interestRate === option;
 
@@ -82,7 +82,7 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
                     key={option}
                     type="button"
                     variant={isSelected ? "secondary" : "outline"}
-                    className="w-full"
+                    className="flex-1"
                     aria-pressed={isSelected}
                     onClick={() => updateField("interestRate", option)}
                   >
