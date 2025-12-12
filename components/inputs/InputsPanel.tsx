@@ -39,8 +39,7 @@ interface InputsPanelProps {
 }
 
 export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
-  const normalizedInitialDeposit = INITIAL_PRESET_STOPS[findNearestPresetIndex(inputs.initialDeposit)];
-  const [draft, setDraft] = useState<Inputs>({ ...inputs, initialDeposit: normalizedInitialDeposit });
+  const [draft, setDraft] = useState<Inputs>(inputs);
   const [boostMode, setBoostMode] = useState<"none" | "add">(
     (inputs.boosts || []).some((boost) => boost.amount || boost.year || boost.label) ? "add" : "none"
   );
@@ -55,10 +54,7 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
   }, [draft, onChange]);
 
   useEffect(() => {
-    const nearestIndex = findNearestPresetIndex(inputs.initialDeposit);
-    const normalizedDeposit = INITIAL_PRESET_STOPS[nearestIndex];
-
-    setDraft({ ...inputs, initialDeposit: normalizedDeposit });
+    setDraft(inputs);
   }, [inputs]);
 
   useEffect(() => {
@@ -320,27 +316,58 @@ function InitialInvestmentSlider({ value, onChange }: InitialInvestmentSliderPro
   const sliderRef = useRef<HTMLDivElement>(null);
   const moveListenerRef = useRef<(event: PointerEvent) => void>();
   const upListenerRef = useRef<() => void>();
-  const [currentIndex, setCurrentIndex] = useState(() => findNearestPresetIndex(value));
   const [isDragging, setIsDragging] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
   const [showCustom, setShowCustom] = useState(false);
   const [customValue, setCustomValue] = useState<string>((value || 0).toString());
 
   useEffect(() => {
-    const nearestIndex = findNearestPresetIndex(value);
-    setCurrentIndex(nearestIndex);
     setCustomValue((value || 0).toString());
   }, [value]);
 
-  const updateIndex = (nextIndex: number) => {
-    const clampedIndex = Math.min(Math.max(nextIndex, 0), INITIAL_PRESET_STOPS.length - 1);
-    if (clampedIndex === currentIndex) return;
-    setCurrentIndex(clampedIndex);
-    setAnimationKey((prev) => prev + 1);
+  const valueToRatio = (amount: number) => {
+    const stops = INITIAL_PRESET_STOPS;
+    if (stops.length < 2) return 0;
 
-    const nextAmount = INITIAL_PRESET_STOPS[clampedIndex];
-    if (nextAmount !== value) {
-      onChange(nextAmount);
+    const capped = Math.max(stops[0], Math.min(amount, stops[stops.length - 1]));
+    if (capped <= stops[0]) return 0;
+    if (capped >= stops[stops.length - 1]) return 1;
+
+    for (let i = 0; i < stops.length - 1; i++) {
+      const lower = stops[i];
+      const upper = stops[i + 1];
+      if (capped >= lower && capped <= upper) {
+        const fraction = (capped - lower) / (upper - lower);
+        return (i + fraction) / (stops.length - 1);
+      }
+    }
+
+    return 0;
+  };
+
+  const ratioToValue = (ratio: number) => {
+    const stops = INITIAL_PRESET_STOPS;
+    if (stops.length < 2) return stops[0] || 0;
+
+    const normalized = Math.min(Math.max(ratio, 0), 1) * (stops.length - 1);
+    const lowerIndex = Math.floor(normalized);
+    const upperIndex = Math.min(Math.ceil(normalized), stops.length - 1);
+
+    if (lowerIndex === upperIndex) {
+      return stops[lowerIndex];
+    }
+
+    const lower = stops[lowerIndex];
+    const upper = stops[upperIndex];
+    const fraction = normalized - lowerIndex;
+    return lower + fraction * (upper - lower);
+  };
+
+  const commitValue = (nextValue: number) => {
+    const sanitized = Math.max(0, Number.isFinite(nextValue) ? nextValue : 0);
+    if (sanitized !== value) {
+      onChange(sanitized);
+      setAnimationKey((prev) => prev + 1);
     }
   };
 
@@ -348,8 +375,8 @@ function InitialInvestmentSlider({ value, onChange }: InitialInvestmentSliderPro
     if (!sliderRef.current) return;
     const rect = sliderRef.current.getBoundingClientRect();
     const ratio = rect.width === 0 ? 0 : Math.max(0, Math.min(clientX - rect.left, rect.width)) / rect.width;
-    const approximateIndex = ratio * (INITIAL_PRESET_STOPS.length - 1);
-    updateIndex(Math.round(approximateIndex));
+    const nextValue = ratioToValue(ratio);
+    commitValue(nextValue);
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -386,14 +413,20 @@ function InitialInvestmentSlider({ value, onChange }: InitialInvestmentSliderPro
   }, []);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
-      event.preventDefault();
-      updateIndex(currentIndex - 1);
-    }
+    const stepDirection =
+      event.key === "ArrowLeft" || event.key === "ArrowDown"
+        ? -1
+        : event.key === "ArrowRight" || event.key === "ArrowUp"
+          ? 1
+          : 0;
 
-    if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+    if (stepDirection !== 0) {
       event.preventDefault();
-      updateIndex(currentIndex + 1);
+      const nearestIndex = findNearestPresetIndex(value);
+      const lower = INITIAL_PRESET_STOPS[Math.max(nearestIndex - 1, 0)];
+      const upper = INITIAL_PRESET_STOPS[Math.min(nearestIndex + 1, INITIAL_PRESET_STOPS.length - 1)];
+      const segment = Math.max(100, Math.round((upper - lower) / 10));
+      commitValue(value + stepDirection * segment);
     }
   };
 
@@ -404,7 +437,9 @@ function InitialInvestmentSlider({ value, onChange }: InitialInvestmentSliderPro
     setAnimationKey((prev) => prev + 1);
   };
 
-  const progress = (currentIndex / (INITIAL_PRESET_STOPS.length - 1)) * 100;
+  const sliderRatio = valueToRatio(value);
+  const nearestStopIndex = findNearestPresetIndex(value);
+  const progress = sliderRatio * 100;
   const displayAmount = value || 0;
 
   return (
@@ -459,7 +494,7 @@ function InitialInvestmentSlider({ value, onChange }: InitialInvestmentSliderPro
               className="absolute top-1/2 h-3 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-500/50"
               style={{
                 left: `${(index / (INITIAL_PRESET_STOPS.length - 1)) * 100}%`,
-                opacity: index === currentIndex ? 0.9 : 0.55,
+                opacity: index === nearestStopIndex ? 0.9 : 0.55,
                 transition: `opacity 160ms ${EASING}`
               }}
               aria-hidden
