@@ -8,9 +8,9 @@ interface SummaryStatsProps {
 
 export function SummaryStats({ data }: SummaryStatsProps) {
   const items = [
-    { label: "Final Balance", value: data.finalBalance },
     { label: "Total Contributions", value: data.totalContributions },
-    { label: "Total Interest", value: data.totalInterest }
+    { label: "Total Interest", value: data.totalInterest },
+    { label: "Final Balance", value: data.finalBalance }
   ];
 
   return (
