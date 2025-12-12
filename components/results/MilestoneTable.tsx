@@ -23,23 +23,32 @@ interface MilestoneTableProps {
 export function MilestoneTable({ data }: MilestoneTableProps) {
   return (
     <Card className="border-slate-200 bg-white/90">
-      <CardHeader className="px-4 pt-4 pb-1">
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 className="text-base font-semibold text-slate-900">Milestones (Every 5 Years)</h3>
+      <CardHeader className="px-6 pt-5 pb-0">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-base font-semibold text-slate-900">Milestones (every 5 years)</h3>
             <p className="text-sm text-slate-500">Stacked contributions and growth by milestone year</p>
           </div>
           <div className="text-right">
-            <p className="text-xs uppercase tracking-wide text-slate-500">Projected total</p>
-            <p className="text-base font-semibold text-slate-900">{formatCurrency(data.finalBalance)}</p>
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Final: {formatCurrency(data.finalBalance)}</p>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="h-[360px] pt-0">
+      <CardContent className="h-[360px] pt-4 pb-6 px-6">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data.milestones} margin={{ left: 8, right: 8, bottom: 8 }}>
+          <BarChart
+            data={data.milestones}
+            margin={{ top: 8, left: 8, right: 8, bottom: 8 }}
+            barCategoryGap="18%"
+          >
             <CartesianGrid stroke="#E2E8F0" strokeDasharray="3 3" />
-            <XAxis dataKey="year" tick={{ fill: "#475569", fontSize: 12 }} axisLine={false} tickLine={false} />
+            <XAxis
+              dataKey="year"
+              ticks={data.milestones.map((m) => m.year)}
+              tick={{ fill: "#475569", fontSize: 12 }}
+              axisLine={false}
+              tickLine={false}
+            />
             <YAxis
               tickFormatter={(value) => formatCompactCurrency(value)}
               tick={{ fill: "#475569", fontSize: 12 }}

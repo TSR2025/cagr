@@ -18,18 +18,18 @@ interface GrowthChartProps {
 
 export function GrowthChart({ data }: GrowthChartProps) {
   return (
-      <div className="h-[360px] w-full rounded-2xl border border-slate-200 bg-white/90 p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <div>
-          <p className="text-sm text-slate-500">Projected balance</p>
-          <h3 className="text-lg font-semibold text-slate-900">Growth over time</h3>
+      <div className="h-[360px] w-full rounded-2xl border border-slate-200 bg-white/90 p-6">
+      <div className="mb-4 space-y-2">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-lg font-semibold text-slate-900">Balance over time</h3>
+          <p className="text-sm text-slate-500">Contributions vs Growth</p>
         </div>
         <div className="flex items-center gap-3 text-xs font-medium text-slate-600">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-1 text-slate-600">
             <span className="h-2 w-2 rounded-full bg-sky-500" aria-hidden />
             <span>Contributions</span>
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-1 text-slate-600">
             <span className="h-2 w-2 rounded-full bg-amber-400" aria-hidden />
             <span>Growth</span>
           </div>
@@ -48,7 +48,13 @@ export function GrowthChart({ data }: GrowthChartProps) {
             </linearGradient>
           </defs>
           <CartesianGrid stroke="#E2E8F0" strokeDasharray="3 3" />
-          <XAxis dataKey="year" tick={{ fill: "#475569", fontSize: 12 }} axisLine={false} tickLine={false} />
+          <XAxis
+            dataKey="year"
+            ticks={[0, 5, 10, 15, 20, 25, 30]}
+            tick={{ fill: "#475569", fontSize: 12 }}
+            axisLine={false}
+            tickLine={false}
+          />
           <YAxis
             tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
             tick={{ fill: "#475569", fontSize: 12 }}
