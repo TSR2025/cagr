@@ -17,3 +17,73 @@ body {
 .table-scroll {
   @apply w-full overflow-x-auto;
 }
+
+.initial-investment-slider {
+  @apply w-full appearance-none bg-transparent;
+  height: 36px;
+}
+
+.initial-investment-slider:focus-visible {
+  outline: none;
+}
+
+.initial-investment-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: linear-gradient(to right, #0f172a var(--slider-fill), #e2e8f0 var(--slider-fill));
+  transition: background 160ms var(--slider-ease, cubic-bezier(0.2, 0.9, 0.2, 1));
+}
+
+.initial-investment-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: linear-gradient(to right, #0f172a var(--slider-fill), #e2e8f0 var(--slider-fill));
+  transition: background 160ms var(--slider-ease, cubic-bezier(0.2, 0.9, 0.2, 1));
+}
+
+.initial-investment-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 22px;
+  width: 22px;
+  margin-top: -7px;
+  border-radius: 9999px;
+  background: white;
+  border: 2px solid #0f172a;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
+  transition: transform 160ms var(--slider-ease, cubic-bezier(0.2, 0.9, 0.2, 1)), box-shadow 160ms var(--slider-ease, cubic-bezier(0.2, 0.9, 0.2, 1));
+}
+
+.initial-investment-slider::-webkit-slider-thumb:active {
+  transform: scale(1.05);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+}
+
+.initial-investment-slider::-moz-range-thumb {
+  height: 22px;
+  width: 22px;
+  border-radius: 9999px;
+  background: white;
+  border: 2px solid #0f172a;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.15);
+  transition: transform 160ms var(--slider-ease, cubic-bezier(0.2, 0.9, 0.2, 1)), box-shadow 160ms var(--slider-ease, cubic-bezier(0.2, 0.9, 0.2, 1));
+}
+
+.initial-investment-slider::-moz-range-thumb:active {
+  transform: scale(1.05);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+}
+
+@keyframes valueChange {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-value-change {
+  animation: valueChange 160ms var(--slider-ease, cubic-bezier(0.2, 0.9, 0.2, 1));
+}
