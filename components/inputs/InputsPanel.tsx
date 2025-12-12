@@ -13,7 +13,6 @@ import {
   OneTimeBoost
 } from "@/lib/calculations/calculateProjection";
 import { ContributionSelector } from "./ContributionSelector";
-import { TooltipIcon } from "./TooltipIcon";
 import { ChevronDown } from "lucide-react";
 
 const INTEREST_RATE_OPTIONS = [3, 5, 7, 10];
@@ -21,6 +20,7 @@ const CONTRIBUTE_YEAR_OPTIONS = [10, 20, 30];
 const PROJECT_YEAR_OPTIONS = [20, 30, 40];
 const MAX_PROJECT_YEARS = Math.max(...PROJECT_YEAR_OPTIONS);
 const EASING = "cubic-bezier(0.2, 0.9, 0.2, 1)";
+const INITIAL_PRESETS = [5000, 10000, 25000, 50000];
 
 interface InputsPanelProps {
   inputs: Inputs;
@@ -29,7 +29,14 @@ interface InputsPanelProps {
 
 export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
   const [draft, setDraft] = useState<Inputs>(inputs);
-  const [boostsOpen, setBoostsOpen] = useState(false);
+  const [scenariosOpen, setScenariosOpen] = useState(false);
+  const [initialMode, setInitialMode] = useState<"none" | "add">(
+    inputs.initialDeposit > 0 ? "add" : "none"
+  );
+  const [boostsMode, setBoostsMode] = useState<"none" | "add">(
+    (inputs.boosts || []).length > 0 ? "add" : "none"
+  );
+  const [showCustomInitial, setShowCustomInitial] = useState(false);
 
   useEffect(() => {
     const id = setTimeout(() => onChange(draft), 250);
@@ -38,6 +45,11 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
 
   useEffect(() => {
     setDraft(inputs);
+    setInitialMode(inputs.initialDeposit > 0 ? "add" : "none");
+    setBoostsMode((inputs.boosts || []).length > 0 ? "add" : "none");
+    setShowCustomInitial(
+      inputs.initialDeposit > 0 && !INITIAL_PRESETS.includes(inputs.initialDeposit)
+    );
   }, [inputs]);
 
   const updateField = <K extends keyof Inputs>(key: K, value: Inputs[K]) => {
@@ -67,63 +79,240 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
             onChange={(val) => updateField("recurringAmount", val)}
             tooltip="Your planned monthly contribution."
           />
-          <NumericField
-            id="initialDeposit"
-            label="Initial Lump Sum"
-            prefix="$"
-            value={draft.initialDeposit}
-            onChange={(val) => updateField("initialDeposit", val)}
-          />
 
-          <div className="rounded-xl border border-slate-200/90 bg-white/70">
+          <div className="space-y-2">
             <button
               type="button"
-              onClick={() => setBoostsOpen((prev) => !prev)}
-              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-              aria-expanded={boostsOpen}
+              onClick={() => setScenariosOpen((prev) => !prev)}
+              className="flex w-full items-center justify-between rounded-lg px-1 py-2 text-left text-sm font-semibold text-slate-800 transition hover:text-slate-900"
+              aria-expanded={scenariosOpen}
             >
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-slate-800">One-time boosts (optional)</span>
-                <TooltipIcon text="Add occasional windfalls like bonuses or one-off deposits." />
-              </div>
+              <span className="flex items-center gap-2 text-slate-700">+ Add scenarios (optional)</span>
               <ChevronDown
                 className="h-4 w-4 text-slate-500 transition-transform"
                 style={{
-                  transform: `rotate(${boostsOpen ? 180 : 0}deg)`,
+                  transform: `rotate(${scenariosOpen ? 180 : 0}deg)`,
                   transitionTimingFunction: EASING,
                   transitionDuration: "200ms"
                 }}
               />
             </button>
+
             <div
-              className="overflow-hidden px-4"
+              className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white/60"
               style={{
-                maxHeight: boostsOpen ? 900 : 0,
-                transition: `max-height ${boostsOpen ? 300 : 240}ms ${EASING}`
+                maxHeight: scenariosOpen ? 1100 : 0,
+                transition: `max-height ${scenariosOpen ? 300 : 240}ms ${EASING}`
               }}
             >
               <div
                 className={clsx(
-                  "space-y-3 pb-4 pt-1",
-                  boostsOpen
+                  "space-y-6 px-4 py-4",
+                  scenariosOpen
                     ? "opacity-100 translate-y-0"
                     : "pointer-events-none translate-y-[6px] opacity-0"
                 )}
                 style={{
-                  transition: `opacity 200ms ${EASING} ${boostsOpen ? "50ms" : "0ms"}, transform 220ms ${EASING} ${
-                    boostsOpen ? "50ms" : "0ms"
+                  transition: `opacity 200ms ${EASING} ${scenariosOpen ? "50ms" : "0ms"}, transform 220ms ${EASING} ${
+                    scenariosOpen ? "50ms" : "0ms"
                   }`
                 }}
               >
-                <p className="text-sm text-slate-600">
-                  Add large one-time amounts at specific years, like bonuses or a house sale.
-                </p>
-                <OneTimeBoostsSection
-                  boosts={boostValues}
-                  onChange={(next) => updateField("boosts", next as OneTimeBoost[])}
-                  maxYear={draft.projectYears}
-                  showHeader={false}
-                />
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-slate-900">Initial investment</p>
+                    </div>
+                    <div className="flex gap-2" role="group" aria-label="Initial investment toggle">
+                      {(
+                        [
+                          { label: "None", value: "none" },
+                          { label: "Add initial investment", value: "add" }
+                        ] as const
+                      ).map((option) => {
+                        const isSelected = initialMode === option.value;
+                        return (
+                          <Button
+                            key={option.value}
+                            type="button"
+                            variant={isSelected ? "secondary" : "ghost"}
+                            size="sm"
+                            className="whitespace-nowrap"
+                            aria-pressed={isSelected}
+                            onClick={() => {
+                              setInitialMode(option.value);
+                              if (option.value === "none") {
+                                updateField("initialDeposit", 0);
+                                setShowCustomInitial(false);
+                              }
+                            }}
+                          >
+                            {option.label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div
+                    className="overflow-hidden"
+                    style={{
+                      maxHeight: initialMode === "add" ? 900 : 0,
+                      transition: `max-height ${initialMode === "add" ? 260 : 220}ms ${EASING}`
+                    }}
+                  >
+                    <div
+                      className={clsx(
+                        "space-y-3 pt-1",
+                        initialMode === "add"
+                          ? "opacity-100 translate-y-0"
+                          : "pointer-events-none translate-y-[6px] opacity-0"
+                      )}
+                      style={{
+                        transition: `opacity 220ms ${EASING} ${initialMode === "add" ? "50ms" : "0ms"}, transform 240ms ${
+                          EASING
+                        } ${initialMode === "add" ? "50ms" : "0ms"}`
+                      }}
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        {INITIAL_PRESETS.map((amount) => {
+                          const isSelected = draft.initialDeposit === amount;
+                          return (
+                            <button
+                              key={amount}
+                              type="button"
+                              className={clsx(
+                                "flex h-16 items-center justify-center rounded-lg border bg-slate-50 text-sm font-semibold text-slate-800 shadow-subtle transition-all",
+                                "hover:border-slate-300 hover:shadow-md",
+                                isSelected && "border-slate-500 bg-white shadow-md"
+                              )}
+                              style={{
+                                transitionTimingFunction: EASING,
+                                transitionDuration: "140ms",
+                                transform: `scale(${isSelected ? 1.01 : 1})`
+                              }}
+                              onClick={() => {
+                                setShowCustomInitial(false);
+                                updateField("initialDeposit", amount);
+                              }}
+                            >
+                              ${amount.toLocaleString()}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="text-slate-700"
+                          onClick={() => setShowCustomInitial((prev) => !prev)}
+                          aria-expanded={showCustomInitial}
+                        >
+                          Custom amount
+                        </Button>
+
+                        <div
+                          className="overflow-hidden"
+                          style={{
+                            maxHeight: showCustomInitial ? 200 : 0,
+                            transition: `max-height ${showCustomInitial ? 260 : 220}ms ${EASING}`
+                          }}
+                        >
+                          <div
+                            className={clsx(
+                              "pt-1",
+                              showCustomInitial
+                                ? "opacity-100 translate-y-0"
+                                : "pointer-events-none translate-y-[6px] opacity-0"
+                            )}
+                            style={{
+                              transition: `opacity 200ms ${EASING} ${showCustomInitial ? "50ms" : "0ms"}, transform 220ms ${
+                                EASING
+                              } ${showCustomInitial ? "50ms" : "0ms"}`
+                            }}
+                          >
+                            <NumericField
+                              id="initialDeposit"
+                              label=""
+                              prefix="$"
+                              value={draft.initialDeposit}
+                              onChange={(val) => updateField("initialDeposit", val)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2 rounded-xl border border-slate-200/90 bg-white/70 p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">One-time boosts</p>
+                      <p className="text-xs text-slate-600">Add occasional amounts like bonuses or windfalls.</p>
+                    </div>
+                    <div className="flex gap-2" role="group" aria-label="One-time boosts toggle">
+                      {(
+                        [
+                          { label: "None", value: "none" },
+                          { label: "Add boosts", value: "add" }
+                        ] as const
+                      ).map((option) => {
+                        const isSelected = boostsMode === option.value;
+                        return (
+                          <Button
+                            key={option.value}
+                            type="button"
+                            variant={isSelected ? "secondary" : "ghost"}
+                            size="sm"
+                            className="whitespace-nowrap"
+                            aria-pressed={isSelected}
+                            onClick={() => {
+                              setBoostsMode(option.value);
+                              if (option.value === "none") {
+                                updateField("boosts", [] as OneTimeBoost[]);
+                              }
+                            }}
+                          >
+                            {option.label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div
+                    className="overflow-hidden"
+                    style={{
+                      maxHeight: boostsMode === "add" ? 900 : 0,
+                      transition: `max-height ${boostsMode === "add" ? 260 : 220}ms ${EASING}`
+                    }}
+                  >
+                    <div
+                      className={clsx(
+                        "pt-2",
+                        boostsMode === "add"
+                          ? "opacity-100 translate-y-0"
+                          : "pointer-events-none translate-y-[6px] opacity-0"
+                      )}
+                      style={{
+                        transition: `opacity 220ms ${EASING} ${boostsMode === "add" ? "50ms" : "0ms"}, transform 240ms ${
+                          EASING
+                        } ${boostsMode === "add" ? "50ms" : "0ms"}`
+                      }}
+                    >
+                      <OneTimeBoostsSection
+                        boosts={boostValues}
+                        onChange={(next) => updateField("boosts", next as OneTimeBoost[])}
+                        maxYear={draft.projectYears}
+                        showHeader={false}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
