@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { NumericField } from "./NumericField";
 import { SectionHeader } from "./SectionHeader";
@@ -15,6 +15,8 @@ import { ContributionSelector } from "./ContributionSelector";
 import { TooltipIcon } from "./TooltipIcon";
 
 const INTEREST_RATE_OPTIONS = [3, 5, 7, 10];
+const CONTRIBUTE_YEAR_OPTIONS = [10, 20, 30];
+const PROJECT_YEAR_OPTIONS = [20, 30, 40];
 
 interface InputsPanelProps {
   inputs: Inputs;
@@ -38,11 +40,6 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
   };
 
   const boostValues = useMemo(() => draft.boosts || [], [draft.boosts]);
-
-  const ensureProjection = (value: number) => {
-    const nextProjection = Math.max(value, draft.recurringYears);
-    updateField("projectionYears", nextProjection);
-  };
 
   return (
     <Card className="sticky top-6 h-fit w-full max-w-[420px] border-slate-200 bg-white/90 shadow-subtle">
@@ -96,39 +93,141 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
             onChange={(val) => updateField("recurringAmount", val)}
             tooltip="Your planned monthly contribution."
           />
-          <NumericField
-            id="recurringYears"
-            label="Contribute For (years)"
-            value={draft.recurringYears}
-            min={1}
-            onChange={(val) => {
-              updateField("recurringYears", val);
-              if (val > draft.projectionYears) {
-                updateField("projectionYears", val);
-              }
-            }}
-            tooltip="How long you plan to keep contributing (in years)."
-          />
         </div>
 
-        <div className="space-y-3">
-          <SectionHeader title="Projection" />
-          <NumericField
-            id="projectionYears"
-            label="Project Over (years)"
-            value={draft.projectionYears}
-            min={draft.recurringYears}
-            onChange={(val) => ensureProjection(val)}
-            tooltip="How long we should show your money growing (overall horizon)."
-          />
+        <div className="space-y-4">
+          <SectionHeader title="Time Horizon" />
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-slate-600">Contribute for (years)</Label>
+            <div className="flex gap-2" role="group" aria-label="Contribute for years">
+              {CONTRIBUTE_YEAR_OPTIONS.map((option) => {
+                const isSelected = draft.contributeYears === option;
+
+                return (
+                  <Button
+                    key={option}
+                    type="button"
+                    variant={isSelected ? "secondary" : "outline"}
+                    className="flex-1"
+                    aria-pressed={isSelected}
+                    onClick={() => updateField("contributeYears", option)}
+                  >
+                    {option}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-slate-600">Project over (years)</Label>
+            <div className="flex gap-2" role="group" aria-label="Project over years">
+              {PROJECT_YEAR_OPTIONS.map((option) => {
+                const isSelected = draft.projectYears === option;
+
+                return (
+                  <Button
+                    key={option}
+                    type="button"
+                    variant={isSelected ? "secondary" : "outline"}
+                    className="flex-1"
+                    aria-pressed={isSelected}
+                    onClick={() => updateField("projectYears", option)}
+                  >
+                    {option}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+
+          <TimeHorizonTimeline contributeYears={draft.contributeYears} projectYears={draft.projectYears} />
         </div>
 
         <OneTimeBoostsSection
           boosts={boostValues}
           onChange={(next) => updateField("boosts", next as OneTimeBoost[])}
-          maxYear={draft.projectionYears}
+          maxYear={draft.projectYears}
         />
       </CardContent>
     </Card>
+  );
+}
+
+interface TimeHorizonTimelineProps {
+  contributeYears: number;
+  projectYears: number;
+}
+
+function TimeHorizonTimeline({ contributeYears, projectYears }: TimeHorizonTimelineProps) {
+  const [showLabel, setShowLabel] = useState(false);
+  const touchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (touchTimeoutRef.current) {
+        clearTimeout(touchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const maxProjectYears = Math.max(...PROJECT_YEAR_OPTIONS);
+  const safeProjectYears = Math.max(projectYears, 0);
+  const postContributionYears = Math.max(projectYears - contributeYears, 0);
+  const containerWidth = `${(Math.min(safeProjectYears, maxProjectYears) / maxProjectYears) * 100}%`;
+  const contributionShare = safeProjectYears === 0 ? 0 : Math.min(contributeYears / safeProjectYears, 1);
+  const fillWidth = `${contributionShare * 100}%`;
+  const showWarning = projectYears < contributeYears;
+
+  const labelText = `${contributeYears} yrs contributing • ${postContributionYears} yrs growing`;
+
+  const triggerTouchLabel = () => {
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+    }
+
+    setShowLabel(true);
+    touchTimeoutRef.current = setTimeout(() => setShowLabel(false), 1600);
+  };
+
+  const hideTouchLabel = () => {
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+      touchTimeoutRef.current = null;
+    }
+
+    setShowLabel(false);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div
+        className="group w-full space-y-2"
+        tabIndex={0}
+        role="presentation"
+        onTouchStart={triggerTouchLabel}
+        onMouseLeave={hideTouchLabel}
+        onBlur={hideTouchLabel}
+      >
+        <div
+          className="relative h-3 rounded-full bg-slate-100 transition-[width] duration-300 ease-out"
+          style={{ width: containerWidth }}
+        >
+          <div
+            className="h-full rounded-full bg-indigo-500 transition-[width] duration-300 ease-out"
+            style={{ width: fillWidth }}
+          />
+        </div>
+        <p
+          className="text-xs text-slate-600 opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100 group-focus-visible:opacity-100 data-[visible=true]:opacity-100"
+          data-visible={showLabel}
+        >
+          {labelText}
+        </p>
+      </div>
+      {showWarning && (
+        <p className="text-xs text-amber-600">Project duration is shorter than contribution period.</p>
+      )}
+    </div>
   );
 }
