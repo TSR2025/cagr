@@ -569,33 +569,16 @@ interface TimelineBarProps {
 }
 
 function TimelineBar({ contributeYears, projectYears }: TimelineBarProps) {
-  const [showLabel, setShowLabel] = useState(false);
-  const [ephemeralLabel, setEphemeralLabel] = useState(false);
-
-  useEffect(() => {
-    if (!ephemeralLabel) return;
-
-    const timer = setTimeout(() => setEphemeralLabel(false), 1400);
-    return () => clearTimeout(timer);
-  }, [ephemeralLabel]);
-
   const postContributionYears = Math.max(projectYears - contributeYears, 0);
   const projectWidth = (projectYears / MAX_PROJECT_YEARS) * 100;
   const contributionWidth = projectYears
     ? Math.min((contributeYears / projectYears) * 100, 100)
     : 0;
-  const revealLabel = showLabel || ephemeralLabel;
 
   return (
     <div className="space-y-2">
       <div
-        className="group relative flex cursor-default flex-col gap-2"
-        tabIndex={0}
-        onMouseEnter={() => setShowLabel(true)}
-        onMouseLeave={() => setShowLabel(false)}
-        onFocus={() => setShowLabel(true)}
-        onBlur={() => setShowLabel(false)}
-        onClick={() => setEphemeralLabel(true)}
+        className="relative flex cursor-default flex-col gap-2"
         aria-label={`${contributeYears} years contributing, ${postContributionYears} years growing`}
       >
         <div className="h-2 w-full rounded-full bg-slate-100">
@@ -610,12 +593,7 @@ function TimelineBar({ contributeYears, projectYears }: TimelineBarProps) {
           </div>
         </div>
 
-        <div
-          className={clsx(
-            "text-xs text-slate-600 transition-opacity duration-150 ease-out",
-            revealLabel ? "opacity-100" : "opacity-0"
-          )}
-        >
+        <div className="text-xs text-slate-600">
           {`${contributeYears} yrs contributing • ${postContributionYears} yrs growing`}
         </div>
       </div>
