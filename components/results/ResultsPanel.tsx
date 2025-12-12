@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ProjectionResult, Inputs } from "@/lib/calculations/calculateProjection";
+import { ProjectionResult } from "@/lib/calculations/calculateProjection";
 import { ExportButton } from "./ExportButton";
 import { SummaryStats } from "./SummaryStats";
 import { GrowthChart } from "./GrowthChart";
@@ -11,7 +11,6 @@ import { ExpandToggle } from "./ExpandToggle";
 
 interface ResultsPanelProps {
   data: ProjectionResult;
-  inputs: Inputs;
 }
 
 export function ResultsPanel({ data }: ResultsPanelProps) {
