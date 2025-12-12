@@ -52,6 +52,9 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
     setDraft((prev) => ({ ...prev, [key]: value }));
   };
   const showDurationWarning = draft.projectYears < draft.contributeYears;
+  const totalYears = draft.projectYears;
+  const contributionYears = Math.min(draft.contributeYears, totalYears);
+  const timeHorizonTooltip = `Growth applies throughout the entire projection. Contributions stop after year ${contributionYears}.`;
 
   return (
     <Card className="sticky top-6 h-fit w-full max-w-[420px] border-slate-200 bg-white/90 shadow-subtle">
@@ -84,7 +87,7 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
         <div className="space-y-4 rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-subtle">
           <SectionHeader
             title="Time Horizon"
-            tooltip="Set how long you plan to contribute and how far out to project your balance."
+            tooltip={timeHorizonTooltip}
           />
           <div className="space-y-3">
             <div className="space-y-2">
@@ -433,17 +436,26 @@ interface TimelineBarProps {
 }
 
 function TimelineBar({ contributeYears, projectYears }: TimelineBarProps) {
-  const postContributionYears = Math.max(projectYears - contributeYears, 0);
+  const totalYears = projectYears;
+  const contributionYears = Math.min(contributeYears, totalYears);
+  const growthOnlyYears = Math.max(totalYears - contributionYears, 0);
   const projectWidth = (projectYears / MAX_PROJECT_YEARS) * 100;
   const contributionWidth = projectYears
     ? Math.min((contributeYears / projectYears) * 100, 100)
     : 0;
 
+  const timelineCopy =
+    growthOnlyYears === 0
+      ? `${totalYears}-year projection • contributions throughout`
+      : contributionYears === 0
+        ? `${totalYears}-year projection • growth-only`
+        : `${totalYears}-year projection • ${contributionYears} yrs contributing, ${growthOnlyYears} yrs growth-only`;
+
   return (
     <div className="space-y-2">
       <div
         className="relative flex cursor-default flex-col gap-2"
-        aria-label={`${contributeYears} years contributing, ${postContributionYears} years growing`}
+        aria-label={timelineCopy}
       >
         <div className="h-2 w-full rounded-full bg-slate-100">
           <div
@@ -458,7 +470,7 @@ function TimelineBar({ contributeYears, projectYears }: TimelineBarProps) {
         </div>
 
         <div className="text-xs text-slate-600">
-          {`${contributeYears} yrs contributing • ${postContributionYears} yrs growing`}
+          {timelineCopy}
         </div>
       </div>
     </div>
