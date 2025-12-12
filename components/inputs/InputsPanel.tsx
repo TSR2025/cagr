@@ -14,6 +14,7 @@ import {
   Compounding
 } from "@/lib/calculations/calculateProjection";
 import { ContributionSelector } from "./ContributionSelector";
+import { TooltipIcon } from "./TooltipIcon";
 
 const INTEREST_RATE_OPTIONS = [3, 5, 7, 10];
 
@@ -67,6 +68,7 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Label className="text-sm font-medium text-slate-600">Annual Interest Rate</Label>
+              <TooltipIcon text="Average annual return you expect to earn." />
             </div>
             <div className="flex gap-2" role="group" aria-label="Annual interest rate">
               {INTEREST_RATE_OPTIONS.map((option) => {
@@ -86,7 +88,6 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
                 );
               })}
             </div>
-            <p className="text-sm text-slate-600">Average annual return you expect to earn.</p>
           </div>
           <SelectField
             id="compounding"
