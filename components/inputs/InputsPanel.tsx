@@ -399,14 +399,13 @@ function InitialInvestmentSlider({ value, onChange }: InitialInvestmentSliderPro
 
   const handleCustomBlur = () => {
     const numericValue = Math.max(0, Number(customValue) || 0);
-    const nearestIndex = findNearestPresetIndex(numericValue);
-    const snappedAmount = INITIAL_PRESET_STOPS[nearestIndex];
-    setCustomValue(snappedAmount.toString());
-    updateIndex(nearestIndex);
+    setCustomValue(numericValue.toString());
+    onChange(numericValue);
+    setAnimationKey((prev) => prev + 1);
   };
 
   const progress = (currentIndex / (INITIAL_PRESET_STOPS.length - 1)) * 100;
-  const displayAmount = INITIAL_PRESET_STOPS[currentIndex];
+  const displayAmount = value || 0;
 
   return (
     <div className="space-y-3 rounded-lg border border-slate-200 bg-white/70 p-3 shadow-sm">
@@ -519,7 +518,7 @@ function InitialInvestmentSlider({ value, onChange }: InitialInvestmentSliderPro
               className="pl-7"
             />
           </div>
-          <p className="pt-1 text-xs text-slate-500">We’ll snap to the nearest preset when you’re done.</p>
+          <p className="pt-1 text-xs text-slate-500">We’ll use exactly what you enter here.</p>
         </div>
       </div>
     </div>
