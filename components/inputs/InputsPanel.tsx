@@ -60,7 +60,7 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
         <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 shadow-subtle">
           <SectionHeader
             title="Contributions"
-            description="Your primary levers. Start with what you can sustain and layer in boosts later."
+            tooltip="Set your recurring contributions and optional boosts to power your plan."
           />
           <ContributionSelector
             value={draft.recurringAmount}
@@ -130,7 +130,10 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
         </div>
 
         <div className="space-y-4 rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-subtle">
-          <SectionHeader title="Time Horizon" />
+          <SectionHeader
+            title="Time Horizon"
+            tooltip="Set how long you plan to contribute and how far out to project your balance."
+          />
           <div className="space-y-3">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-slate-700">Contribute for (years)</Label>
@@ -188,7 +191,6 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
         <div className="space-y-3 rounded-2xl border border-slate-100 bg-white/60 p-3 shadow-sm">
           <SectionHeader
             title="Assumptions"
-            description="Adjust only if you want to model a different return."
             tooltip="Average annual return you expect to earn. Returns are annualized; contributions are applied monthly."
           />
           <div className="space-y-2">
