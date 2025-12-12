@@ -7,6 +7,7 @@ import { OneTimeBoostsSection } from "./OneTimeBoostsSection";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { TooltipIcon } from "./TooltipIcon";
 import clsx from "clsx";
 import { Inputs, OneTimeBoost } from "@/lib/calculations/calculateProjection";
 import { ContributionSelector } from "./ContributionSelector";
@@ -408,11 +409,11 @@ function InitialInvestmentSlider({ value, onChange }: InitialInvestmentSliderPro
   const displayAmount = INITIAL_PRESET_STOPS[currentIndex];
 
   return (
-    <div className="space-y-3 rounded-xl border border-slate-200/90 bg-white/80 p-4 shadow-subtle">
+    <div className="space-y-3 rounded-lg border border-slate-200 bg-white/70 p-3 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-1">
+        <div className="flex items-center gap-2">
           <p className="text-sm font-semibold text-slate-800">Initial investment</p>
-          <p className="text-xs text-slate-600">Set a lump sum to kickstart your plan.</p>
+          <TooltipIcon text="Set a lump sum to kickstart your plan." />
         </div>
         <button
           type="button"
@@ -426,7 +427,7 @@ function InitialInvestmentSlider({ value, onChange }: InitialInvestmentSliderPro
       <div className="flex items-end gap-2">
         <span
           key={animationKey}
-          className="amount-fade-slide block text-3xl font-semibold text-slate-900"
+          className="amount-fade-slide block text-2xl font-semibold text-slate-900"
           style={{ animationTimingFunction: EASING }}
         >
           ${displayAmount.toLocaleString()}
