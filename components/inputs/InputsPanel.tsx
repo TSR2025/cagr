@@ -3,15 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { NumericField } from "./NumericField";
-import { SelectField } from "./SelectField";
 import { SectionHeader } from "./SectionHeader";
 import { OneTimeBoostsSection } from "./OneTimeBoostsSection";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
   Inputs,
-  OneTimeBoost,
-  Compounding
+  OneTimeBoost
 } from "@/lib/calculations/calculateProjection";
 import { ContributionSelector } from "./ContributionSelector";
 import { TooltipIcon } from "./TooltipIcon";
@@ -52,7 +50,7 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
         <p className="text-sm uppercase tracking-wide text-slate-500">Inputs</p>
         <h2 className="text-xl font-semibold text-slate-900">Plan your growth</h2>
         <p className="text-sm text-slate-600">
-          Adjust the knobs to see how recurring contributions, boosts, and compounding shape your balance.
+          Adjust the knobs to see how recurring contributions and boosts shape your balance.
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -68,7 +66,7 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Label className="text-sm font-medium text-slate-600">Annual Interest Rate</Label>
-              <TooltipIcon text="Average annual return you expect to earn." />
+              <TooltipIcon text="Average annual return you expect to earn. Returns are annualized; contributions are applied monthly." />
             </div>
             <div className="flex gap-2" role="group" aria-label="Annual interest rate">
               {INTEREST_RATE_OPTIONS.map((option) => {
@@ -89,14 +87,6 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
               })}
             </div>
           </div>
-          <SelectField
-            id="compounding"
-            label="Compounding Frequency"
-            value={draft.compounding}
-            onValueChange={(val) => updateField("compounding", val as Compounding)}
-            options={[{ value: "monthly", label: "Monthly" }, { value: "yearly", label: "Yearly" }]}
-            tooltip="How often interest is added to your balance."
-          />
         </div>
 
         <div className="space-y-3">

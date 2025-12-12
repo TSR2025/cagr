@@ -24,7 +24,7 @@ npm test
 
 ## Features
 
-- Sticky input panel with compounding, contribution, and boost controls
+- Sticky input panel with contribution and boost controls
 - Live recalculated projections with debounced input updates
 - Growth chart with hover details, milestone table, and full breakdown
 - CSV export of year-by-year results

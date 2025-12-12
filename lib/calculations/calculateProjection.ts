@@ -1,5 +1,3 @@
-export type Compounding = "monthly" | "yearly";
-
 export interface OneTimeBoost {
   year: number;
   amount: number;
@@ -12,7 +10,6 @@ export interface Inputs {
   recurringYears: number;
   projectionYears: number;
   interestRate: number;
-  compounding: Compounding;
   boosts: OneTimeBoost[];
 }
 
@@ -38,7 +35,6 @@ export function calculateProjection(inputs: Inputs): ProjectionResult {
     recurringYears,
     projectionYears,
     interestRate,
-    compounding,
     boosts
   } = inputs;
 
@@ -56,53 +52,28 @@ export function calculateProjection(inputs: Inputs): ProjectionResult {
   let balance = initialDeposit;
   let totalContributions = initialDeposit;
 
-  if (compounding === "monthly") {
-    const monthlyRate = interestRate / 100 / 12;
-    for (let month = 1; month <= projectionYears * 12; month++) {
-      const currentYear = Math.ceil(month / 12);
-      const isFirstMonthOfYear = month % 12 === 1;
+  const monthlyFactor = Math.pow(1 + interestRate / 100, 1 / 12);
 
-      if (currentYear <= recurringYears) {
-        balance += recurringAmount;
-        totalContributions += recurringAmount;
-      }
+  for (let month = 1; month <= projectionYears * 12; month++) {
+    const currentYear = Math.ceil(month / 12);
+    const isFirstMonthOfYear = month % 12 === 1;
 
-      const boost = sanitizedBoosts.find((b) => b.year === currentYear && isFirstMonthOfYear);
-      if (boost) {
-        balance += boost.amount;
-        totalContributions += boost.amount;
-      }
-
-      balance *= 1 + monthlyRate;
-
-      const isYearEnd = month % 12 === 0;
-      if (isYearEnd) {
-        const year = month / 12;
-        yearly.push({
-          year,
-          balance,
-          totalContributions,
-          totalInterest: balance - totalContributions
-        });
-      }
+    if (currentYear <= recurringYears) {
+      balance += recurringAmount;
+      totalContributions += recurringAmount;
     }
-  } else {
-    const annualRate = interestRate / 100;
-    for (let year = 1; year <= projectionYears; year++) {
-      if (year <= recurringYears) {
-        const contribution = recurringAmount * 12;
-        balance += contribution;
-        totalContributions += contribution;
-      }
 
-      const boost = sanitizedBoosts.find((b) => b.year === year);
-      if (boost) {
-        balance += boost.amount;
-        totalContributions += boost.amount;
-      }
+    const boost = sanitizedBoosts.find((b) => b.year === currentYear && isFirstMonthOfYear);
+    if (boost) {
+      balance += boost.amount;
+      totalContributions += boost.amount;
+    }
 
-      balance *= 1 + annualRate;
+    balance *= monthlyFactor;
 
+    const isYearEnd = month % 12 === 0;
+    if (isYearEnd) {
+      const year = month / 12;
       yearly.push({
         year,
         balance,

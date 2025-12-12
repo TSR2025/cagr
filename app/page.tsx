@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import {
   calculateProjection,
   Inputs,
-  Compounding,
   OneTimeBoost
 } from "@/lib/calculations/calculateProjection";
 import { InputsPanel } from "@/components/inputs/InputsPanel";
@@ -16,7 +15,6 @@ const defaultInputs: Inputs = {
   recurringYears: 20,
   projectionYears: 30,
   interestRate: 7,
-  compounding: "monthly",
   boosts: [{ year: 5, amount: 5000, label: "Bonus" }]
 };
 
@@ -32,7 +30,7 @@ export default function HomePage() {
           <InputsPanel inputs={inputs} onChange={setInputs} />
         </div>
         <div className="order-1 lg:order-2">
-          <ResultsPanel data={projection} inputs={inputs} />
+          <ResultsPanel data={projection} />
         </div>
       </div>
     </main>
