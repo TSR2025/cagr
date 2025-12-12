@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { TooltipIcon } from "./TooltipIcon";
 import clsx from "clsx";
@@ -33,10 +32,29 @@ export function ContributionSelector({ value, onChange, label = "Contribution Am
   const tileHoverClasses = "hover:border-slate-300 hover:shadow-md";
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Label className="text-sm font-medium text-slate-700">{label}</Label>
-        {tooltip && <TooltipIcon text={tooltip} />}
+    <div className="space-y-3 rounded-lg border border-slate-200 bg-white/70 p-3 shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Label className="text-sm font-medium text-slate-700">{label}</Label>
+          {tooltip && <TooltipIcon text={tooltip} />}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsExpanded((prev) => !prev)}
+          aria-expanded={isExpanded}
+          className="flex items-center gap-1 text-sm font-semibold text-slate-700 underline-offset-4 transition hover:text-slate-900 hover:underline"
+        >
+          Explore other amounts
+          <ChevronDown
+            className="h-4 w-4 transition-transform"
+            style={{
+              transform: `rotate(${isExpanded ? 180 : 0}deg)`,
+              transitionTimingFunction: EASING,
+              transitionDuration: "200ms"
+            }}
+          />
+        </button>
       </div>
 
       <div className="space-y-3" aria-label="Monthly contribution amount" role="radiogroup">
@@ -136,27 +154,6 @@ export function ContributionSelector({ value, onChange, label = "Contribution Am
               );
             })}
           </div>
-        </div>
-
-        <div className="flex items-center gap-2 pt-1">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setIsExpanded((prev) => !prev)}
-            aria-expanded={isExpanded}
-            size="sm"
-            className="flex items-center gap-1 px-0 text-slate-700 hover:bg-transparent"
-          >
-            <ChevronDown
-              className="h-4 w-4 transition-transform"
-              style={{
-                transform: `rotate(${isExpanded ? 180 : 0}deg)`,
-                transitionTimingFunction: EASING,
-                transitionDuration: "200ms"
-              }}
-            />
-            Explore other amounts
-          </Button>
         </div>
       </div>
     </div>
