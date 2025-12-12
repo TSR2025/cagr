@@ -14,7 +14,7 @@ export function SummaryStats({ data }: SummaryStatsProps) {
   ];
 
   return (
-    <Card className="border-slate-200 bg-white/90">
+    <Card className="border-slate-200 bg-white/90 print-avoid-break">
       <div className="grid gap-4 px-4 py-3 sm:grid-cols-3">
         {items.map((item) => (
           <div key={item.label} className="space-y-1">

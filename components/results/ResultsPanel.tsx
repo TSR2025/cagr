@@ -11,29 +11,33 @@ import { ExpandToggle } from "./ExpandToggle";
 
 interface ResultsPanelProps {
   data: ProjectionResult;
+  onExportPdf: () => void;
+  printMode?: boolean;
 }
 
-export function ResultsPanel({ data }: ResultsPanelProps) {
+export function ResultsPanel({ data, onExportPdf, printMode = false }: ResultsPanelProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 print:space-y-4">
+      <div className="flex items-center justify-between print:mb-2">
         <div>
           <p className="text-sm text-slate-500">Results</p>
           <h2 className="text-xl font-semibold text-slate-900">Your forecast</h2>
         </div>
-        <ExportButton data={data} />
+        {!printMode && <ExportButton data={data} onExportPdf={onExportPdf} />}
       </div>
 
       <SummaryStats data={data} />
       <GrowthChart data={data} />
       <MilestoneTable data={data} />
 
-      <div className="space-y-3">
-        <ExpandToggle expanded={expanded} onToggle={() => setExpanded((p) => !p)} />
-        {expanded && <FullBreakdownTable data={data} />}
-      </div>
+      {!printMode && (
+        <div className="space-y-3 print:hidden">
+          <ExpandToggle expanded={expanded} onToggle={() => setExpanded((p) => !p)} />
+          {expanded && <FullBreakdownTable data={data} />}
+        </div>
+      )}
     </div>
   );
 }

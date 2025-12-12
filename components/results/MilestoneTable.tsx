@@ -22,7 +22,7 @@ interface MilestoneTableProps {
 
 export function MilestoneTable({ data }: MilestoneTableProps) {
   return (
-    <Card className="border-slate-200 bg-white/90">
+    <Card className="border-slate-200 bg-white/90 print-avoid-break">
       <CardHeader className="px-4 pt-4 pb-1">
         <div className="flex items-start justify-between">
           <div>

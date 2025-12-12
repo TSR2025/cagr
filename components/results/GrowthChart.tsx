@@ -18,7 +18,7 @@ interface GrowthChartProps {
 
 export function GrowthChart({ data }: GrowthChartProps) {
   return (
-      <div className="h-[360px] w-full rounded-2xl border border-slate-200 bg-white/90 p-4">
+    <div className="h-[360px] w-full rounded-2xl border border-slate-200 bg-white/90 p-4 print-avoid-break">
       <div className="mb-3 flex items-center justify-between">
         <div>
           <p className="text-sm text-slate-500">Projected balance</p>
