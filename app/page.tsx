@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import {
   calculateProjection,
   Inputs,
-  ContributionFrequency,
   Compounding,
   OneTimeBoost
 } from "@/lib/calculations/calculateProjection";
@@ -14,7 +13,6 @@ import { ResultsPanel } from "@/components/results/ResultsPanel";
 const defaultInputs: Inputs = {
   initialDeposit: 10000,
   recurringAmount: 500,
-  recurringFrequency: "monthly",
   recurringYears: 20,
   projectionYears: 30,
   interestRate: 7,
