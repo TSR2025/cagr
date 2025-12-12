@@ -5,7 +5,6 @@ import {
   BarChart,
   CartesianGrid,
   LabelList,
-  Legend,
   ResponsiveContainer,
   Tooltip as RechartTooltip,
   XAxis,
@@ -27,7 +26,7 @@ export function MilestoneTable({ data, currentAge }: MilestoneTableProps) {
       <CardHeader className="px-6 pt-5 pb-0">
         <div className="space-y-1">
           <h3 className="text-base font-semibold text-slate-900">Milestones (every 5 years)</h3>
-          <p className="text-sm text-slate-500">Stacked contributions and growth by milestone year</p>
+          <p className="text-sm text-slate-500">Key moments where growth starts doing the heavy lifting</p>
         </div>
       </CardHeader>
       <CardContent className="h-[360px] pt-4 pb-6 px-6">
@@ -66,13 +65,6 @@ export function MilestoneTable({ data, currentAge }: MilestoneTableProps) {
                   </div>
                 );
               }}
-            />
-            <Legend
-              verticalAlign="bottom"
-              align="center"
-              iconType="circle"
-              wrapperStyle={{ paddingTop: 4 }}
-              formatter={(value) => <span className="text-xs text-slate-600">{value}</span>}
             />
             <Bar dataKey="totalContributions" name="Contributions" stackId="balance" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
             <Bar dataKey="totalInterest" name="Growth" stackId="balance" fill="#f59e0b" radius={[4, 4, 0, 0]}>
