@@ -7,9 +7,10 @@ interface OneTimeBoostsSectionProps {
   boosts: OneTimeBoost[];
   onChange: (boosts: OneTimeBoost[]) => void;
   maxYear: number;
+  showHeader?: boolean;
 }
 
-export function OneTimeBoostsSection({ boosts, onChange, maxYear }: OneTimeBoostsSectionProps) {
+export function OneTimeBoostsSection({ boosts, onChange, maxYear, showHeader = true }: OneTimeBoostsSectionProps) {
   const visibleRows = useMemo(() => {
     const rows: OneTimeBoost[] = boosts.filter((b) => b.year || b.amount).slice(0, 5);
     const hasEmpty = rows.some((r) => !r.year || !r.amount);
@@ -34,11 +35,13 @@ export function OneTimeBoostsSection({ boosts, onChange, maxYear }: OneTimeBoost
 
   return (
     <div className="space-y-4">
-      <SectionHeader
-        title="One-Time Boosts"
-        description="Optional. Add large one-time amounts at specific years, like bonuses or a house sale."
-        tooltip="Add occasional windfalls to see how they influence your total growth."
-      />
+      {showHeader && (
+        <SectionHeader
+          title="One-Time Boosts"
+          description="Optional. Add large one-time amounts at specific years, like bonuses or a house sale."
+          tooltip="Add occasional windfalls to see how they influence your total growth."
+        />
+      )}
       <div className="space-y-3">
         {visibleRows.map((row, idx) => (
           <OneTimeBoostRow

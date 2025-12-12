@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { NumericField } from "./NumericField";
-import { SectionHeader } from "./SectionHeader";
 import { OneTimeBoostsSection } from "./OneTimeBoostsSection";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -19,6 +18,9 @@ const INTEREST_RATE_OPTIONS = [3, 5, 7, 10];
 const CONTRIBUTE_YEAR_OPTIONS = [10, 20, 30];
 const PROJECT_YEAR_OPTIONS = [20, 30, 40];
 const MAX_PROJECT_YEARS = Math.max(...PROJECT_YEAR_OPTIONS);
+const EASING = "cubic-bezier(0.2, 0.9, 0.2, 1)";
+const ACCORDION_EXPAND_DURATION = 300;
+const ACCORDION_COLLAPSE_DURATION = 240;
 
 interface InputsPanelProps {
   inputs: Inputs;
@@ -27,6 +29,7 @@ interface InputsPanelProps {
 
 export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
   const [draft, setDraft] = useState<Inputs>(inputs);
+  const [showBoosts, setShowBoosts] = useState(false);
 
   useEffect(() => {
     const id = setTimeout(() => onChange(draft), 250);
@@ -55,52 +58,94 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="space-y-3">
-          <SectionHeader title="Starting Point" />
-          <NumericField
-            id="initialDeposit"
-            label="Initial Lump Sum"
-            prefix="$"
-            value={draft.initialDeposit}
-            onChange={(val) => updateField("initialDeposit", val)}
-          />
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label className="text-sm font-medium text-slate-600">Annual Interest Rate</Label>
-              <TooltipIcon text="Average annual return you expect to earn. Returns are annualized; contributions are applied monthly." />
-            </div>
-            <div className="flex gap-2" role="group" aria-label="Annual interest rate">
-              {INTEREST_RATE_OPTIONS.map((option) => {
-                const isSelected = draft.interestRate === option;
-
-                return (
-                  <Button
-                    key={option}
-                    type="button"
-                    variant={isSelected ? "secondary" : "outline"}
-                    className="flex-1"
-                    aria-pressed={isSelected}
-                    onClick={() => updateField("interestRate", option)}
-                  >
-                    {option}%
-                  </Button>
-                );
-              })}
-            </div>
+        <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/90 p-4 shadow-subtle">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Contributions</p>
+            <p className="text-sm text-slate-600">Dial in what you put in and when.</p>
           </div>
-        </div>
 
-        <div className="space-y-3">
-          <SectionHeader title="Recurring Contributions" />
           <ContributionSelector
             value={draft.recurringAmount}
             onChange={(val) => updateField("recurringAmount", val)}
             tooltip="Your planned monthly contribution."
           />
+
+          <div className="rounded-xl border border-slate-200 bg-white/80 p-3 shadow-subtle">
+            <NumericField
+              id="initialDeposit"
+              label="Initial Lump Sum"
+              prefix="$"
+              value={draft.initialDeposit}
+              onChange={(val) => updateField("initialDeposit", val)}
+            />
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white/80 shadow-subtle">
+            <button
+              type="button"
+              onClick={() => setShowBoosts((prev) => !prev)}
+              aria-expanded={showBoosts}
+              className="flex w-full items-center justify-between px-3 py-3 text-left"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-slate-800">One-time boosts (optional)</span>
+                <TooltipIcon text="Add occasional windfalls to see how they influence your total growth." />
+              </div>
+              <svg
+                viewBox="0 0 24 24"
+                className="h-5 w-5 text-slate-500"
+                style={{
+                  transform: `rotate(${showBoosts ? 180 : 0}deg)`,
+                  transition: `transform 200ms ${EASING}`
+                }}
+                aria-hidden
+                focusable="false"
+              >
+                <path
+                  fill="currentColor"
+                  d="M12 15.5a1 1 0 0 1-.7-.29l-5-5a1 1 0 0 1 1.4-1.42l4.3 4.3 4.3-4.3a1 1 0 0 1 1.4 1.42l-5 5a1 1 0 0 1-.7.29"
+                />
+              </svg>
+            </button>
+            <div
+              className="overflow-hidden border-t border-slate-100"
+              style={{
+                maxHeight: showBoosts ? 1000 : 0,
+                transition: `max-height ${showBoosts ? ACCORDION_EXPAND_DURATION : ACCORDION_COLLAPSE_DURATION}ms ${EASING}`
+              }}
+            >
+              <div
+                className={clsx(
+                  "space-y-3 px-3 pb-4 pt-3",
+                  showBoosts
+                    ? "translate-y-0 opacity-100"
+                    : "pointer-events-none translate-y-[6px] opacity-0"
+                )}
+                style={{
+                  transition: `opacity 200ms ${EASING} ${showBoosts ? "50ms" : "0ms"}, transform 220ms ${EASING} ${
+                    showBoosts ? "50ms" : "0ms"
+                  }`
+                }}
+              >
+                <p className="text-sm text-slate-600">
+                  Optional. Add large one-time amounts at specific years, like bonuses or a house sale.
+                </p>
+                <OneTimeBoostsSection
+                  boosts={boostValues}
+                  onChange={(next) => updateField("boosts", next as OneTimeBoost[])}
+                  maxYear={draft.projectYears}
+                  showHeader={false}
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-4">
-          <SectionHeader title="Time Horizon" />
+        <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-subtle">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Time Horizon</p>
+            <p className="text-sm text-slate-600">Adjust how long you contribute and project growth.</p>
+          </div>
           <div className="space-y-3">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-slate-700">Contribute for (years)</Label>
@@ -155,11 +200,38 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
           </div>
         </div>
 
-        <OneTimeBoostsSection
-          boosts={boostValues}
-          onChange={(next) => updateField("boosts", next as OneTimeBoost[])}
-          maxYear={draft.projectYears}
-        />
+        <div className="space-y-3 rounded-2xl border border-slate-100 bg-white/80 p-3 shadow-subtle">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Assumptions</p>
+              <p className="text-sm text-slate-600">Annual interest rate</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-medium text-slate-600">Annual Interest Rate</Label>
+              <TooltipIcon text="Average annual return you expect to earn. Returns are annualized; contributions are applied monthly." />
+            </div>
+            <div className="flex gap-2" role="group" aria-label="Annual interest rate">
+              {INTEREST_RATE_OPTIONS.map((option) => {
+                const isSelected = draft.interestRate === option;
+
+                return (
+                  <Button
+                    key={option}
+                    type="button"
+                    variant={isSelected ? "secondary" : "outline"}
+                    className="flex-1"
+                    aria-pressed={isSelected}
+                    onClick={() => updateField("interestRate", option)}
+                  >
+                    {option}%
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
