@@ -13,7 +13,6 @@ import {
   OneTimeBoost
 } from "@/lib/calculations/calculateProjection";
 import { ContributionSelector } from "./ContributionSelector";
-import { TooltipIcon } from "./TooltipIcon";
 import { ChevronDown } from "lucide-react";
 
 const INTEREST_RATE_OPTIONS = [3, 5, 7, 10];
@@ -29,7 +28,16 @@ interface InputsPanelProps {
 
 export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
   const [draft, setDraft] = useState<Inputs>(inputs);
-  const [boostsOpen, setBoostsOpen] = useState(false);
+  const [scenariosOpen, setScenariosOpen] = useState(false);
+  const [initialMode, setInitialMode] = useState<"none" | "add">(
+    inputs.initialDeposit > 0 ? "add" : "none"
+  );
+  const [showCustomInitial, setShowCustomInitial] = useState(false);
+  const [boostsMode, setBoostsMode] = useState<"none" | "add">(
+    (inputs.boosts || []).some((boost) => boost.year || boost.amount || boost.label)
+      ? "add"
+      : "none"
+  );
 
   useEffect(() => {
     const id = setTimeout(() => onChange(draft), 250);
@@ -46,6 +54,16 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
 
   const boostValues = useMemo(() => draft.boosts || [], [draft.boosts]);
   const showDurationWarning = draft.projectYears < draft.contributeYears;
+
+  useEffect(() => {
+    if (initialMode === "none" && draft.initialDeposit !== 0) {
+      setDraft((prev) => ({ ...prev, initialDeposit: 0 }));
+    }
+
+    if (initialMode === "add" && draft.initialDeposit === 0) {
+      setDraft((prev) => ({ ...prev, initialDeposit: 5000 }));
+    }
+  }, [initialMode, draft.initialDeposit]);
 
   return (
     <Card className="sticky top-6 h-fit w-full max-w-[420px] border-slate-200 bg-white/90 shadow-subtle">
@@ -67,63 +85,221 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
             onChange={(val) => updateField("recurringAmount", val)}
             tooltip="Your planned monthly contribution."
           />
-          <NumericField
-            id="initialDeposit"
-            label="Initial Lump Sum"
-            prefix="$"
-            value={draft.initialDeposit}
-            onChange={(val) => updateField("initialDeposit", val)}
-          />
-
-          <div className="rounded-xl border border-slate-200/90 bg-white/70">
-            <button
+          <div className="space-y-2">
+            <Button
               type="button"
-              onClick={() => setBoostsOpen((prev) => !prev)}
-              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-              aria-expanded={boostsOpen}
+              variant="ghost"
+              className="group flex w-full items-center justify-between rounded-xl px-3 py-2 text-slate-700 hover:bg-slate-100/80"
+              onClick={() => setScenariosOpen((prev) => !prev)}
+              aria-expanded={scenariosOpen}
             >
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-slate-800">One-time boosts (optional)</span>
-                <TooltipIcon text="Add occasional windfalls like bonuses or one-off deposits." />
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <span className="text-slate-800">+ Add scenarios (optional)</span>
               </div>
               <ChevronDown
-                className="h-4 w-4 text-slate-500 transition-transform"
+                className="h-4 w-4 transition-transform"
                 style={{
-                  transform: `rotate(${boostsOpen ? 180 : 0}deg)`,
+                  transform: `rotate(${scenariosOpen ? 180 : 0}deg)`,
                   transitionTimingFunction: EASING,
                   transitionDuration: "200ms"
                 }}
               />
-            </button>
+            </Button>
+
             <div
-              className="overflow-hidden px-4"
+              className="overflow-hidden"
               style={{
-                maxHeight: boostsOpen ? 900 : 0,
-                transition: `max-height ${boostsOpen ? 300 : 240}ms ${EASING}`
+                maxHeight: scenariosOpen ? 1200 : 0,
+                transition: `max-height ${scenariosOpen ? 300 : 240}ms ${EASING}`
               }}
             >
               <div
                 className={clsx(
-                  "space-y-3 pb-4 pt-1",
-                  boostsOpen
+                  "space-y-5 rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-subtle",
+                  scenariosOpen
                     ? "opacity-100 translate-y-0"
                     : "pointer-events-none translate-y-[6px] opacity-0"
                 )}
                 style={{
-                  transition: `opacity 200ms ${EASING} ${boostsOpen ? "50ms" : "0ms"}, transform 220ms ${EASING} ${
-                    boostsOpen ? "50ms" : "0ms"
+                  transition: `opacity 200ms ${EASING} ${scenariosOpen ? "50ms" : "0ms"}, transform 220ms ${EASING} ${
+                    scenariosOpen ? "50ms" : "0ms"
                   }`
                 }}
               >
-                <p className="text-sm text-slate-600">
-                  Add large one-time amounts at specific years, like bonuses or a house sale.
-                </p>
-                <OneTimeBoostsSection
-                  boosts={boostValues}
-                  onChange={(next) => updateField("boosts", next as OneTimeBoost[])}
-                  maxYear={draft.projectYears}
-                  showHeader={false}
-                />
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-800">Initial investment</p>
+                    </div>
+                    <div className="flex gap-2" role="group" aria-label="Initial investment">
+                      {[
+                        { key: "none" as const, label: "None" },
+                        { key: "add" as const, label: "Add initial investment" }
+                      ].map((option) => {
+                        const isSelected = initialMode === option.key;
+                        return (
+                          <Button
+                            key={option.key}
+                            type="button"
+                            variant={isSelected ? "secondary" : "outline"}
+                            size="sm"
+                            className="whitespace-nowrap"
+                            onClick={() => setInitialMode(option.key)}
+                            aria-pressed={isSelected}
+                          >
+                            {option.label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div
+                    className="overflow-hidden"
+                    style={{
+                      maxHeight: initialMode === "add" ? 700 : 0,
+                      transition: `max-height ${initialMode === "add" ? 260 : 220}ms ${EASING}`
+                    }}
+                  >
+                    <div
+                      className={clsx(
+                        "space-y-3",
+                        initialMode === "add"
+                          ? "opacity-100 translate-y-0"
+                          : "pointer-events-none translate-y-[6px] opacity-0"
+                      )}
+                      style={{
+                        transition: `opacity 200ms ${EASING} ${initialMode === "add" ? "50ms" : "0ms"}, transform 220ms ${
+                          initialMode === "add" ? "50ms" : "0ms"
+                        }`
+                      }}
+                    >
+                      <div className="grid grid-cols-2 gap-3" role="group" aria-label="Initial investment presets">
+                        {[5000, 10000, 25000, 50000].map((amount) => {
+                          const isSelected = draft.initialDeposit === amount;
+                          return (
+                            <button
+                              key={amount}
+                              type="button"
+                              className={clsx(
+                                "flex h-16 items-center justify-center rounded-lg border bg-slate-50 text-sm font-semibold text-slate-800 shadow-subtle transition-all duration-150",
+                                isSelected
+                                  ? "border-slate-500 bg-white shadow-md"
+                                  : "border-slate-200 hover:border-slate-300 hover:shadow-md"
+                              )}
+                              style={{ transitionTimingFunction: EASING }}
+                              onClick={() => updateField("initialDeposit", amount)}
+                              aria-pressed={isSelected}
+                            >
+                              ${amount.toLocaleString()}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="space-y-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="px-0 text-slate-700 hover:bg-transparent hover:text-slate-900"
+                          onClick={() => setShowCustomInitial((prev) => !prev)}
+                          aria-expanded={showCustomInitial}
+                        >
+                          Custom amount
+                        </Button>
+                        <div
+                          className="overflow-hidden"
+                          style={{
+                            maxHeight: showCustomInitial ? 140 : 0,
+                            transition: `max-height ${showCustomInitial ? 240 : 200}ms ${EASING}`
+                          }}
+                        >
+                          <div
+                            className={clsx(
+                              showCustomInitial
+                                ? "opacity-100 translate-y-0"
+                                : "pointer-events-none translate-y-[6px] opacity-0"
+                            )}
+                            style={{
+                              transition: `opacity 200ms ${EASING} ${showCustomInitial ? "50ms" : "0ms"}, transform 220ms ${
+                                showCustomInitial ? "50ms" : "0ms"
+                              }`
+                            }}
+                          >
+                            <NumericField
+                              id="initialDeposit"
+                              label="Initial investment amount"
+                              prefix="$"
+                              value={draft.initialDeposit}
+                              onChange={(val) => updateField("initialDeposit", val)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3 rounded-xl border border-slate-200/80 bg-white/80 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold text-slate-800">One-time boosts</p>
+                      <p className="text-xs text-slate-600">
+                        Add occasional amounts like bonuses or windfalls.
+                      </p>
+                    </div>
+                    <div className="flex gap-2" role="group" aria-label="One-time boosts">
+                      {[
+                        { key: "none" as const, label: "None" },
+                        { key: "add" as const, label: "Add boosts" }
+                      ].map((option) => {
+                        const isSelected = boostsMode === option.key;
+                        return (
+                          <Button
+                            key={option.key}
+                            type="button"
+                            variant={isSelected ? "secondary" : "outline"}
+                            size="sm"
+                            className="whitespace-nowrap"
+                            onClick={() => setBoostsMode(option.key)}
+                            aria-pressed={isSelected}
+                          >
+                            {option.label}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div
+                    className="overflow-hidden"
+                    style={{
+                      maxHeight: boostsMode === "add" ? 900 : 0,
+                      transition: `max-height ${boostsMode === "add" ? 260 : 220}ms ${EASING}`
+                    }}
+                  >
+                    <div
+                      className={clsx(
+                        "space-y-3",
+                        boostsMode === "add"
+                          ? "opacity-100 translate-y-0"
+                          : "pointer-events-none translate-y-[6px] opacity-0"
+                      )}
+                      style={{
+                        transition: `opacity 200ms ${EASING} ${boostsMode === "add" ? "50ms" : "0ms"}, transform 220ms ${
+                          boostsMode === "add" ? "50ms" : "0ms"
+                        }`
+                      }}
+                    >
+                      <OneTimeBoostsSection
+                        boosts={boostValues}
+                        onChange={(next) => updateField("boosts", next as OneTimeBoost[])}
+                        maxYear={draft.projectYears}
+                        showHeader={false}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
