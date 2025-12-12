@@ -364,7 +364,7 @@ function InitialInvestmentSlider({ value, onChange }: InitialInvestmentSliderPro
   };
 
   const commitValue = (nextValue: number) => {
-    const sanitized = Math.max(0, Number.isFinite(nextValue) ? nextValue : 0);
+    const sanitized = Math.max(0, Number.isFinite(nextValue) ? Math.round(nextValue) : 0);
     if (sanitized !== value) {
       onChange(sanitized);
       setAnimationKey((prev) => prev + 1);
@@ -376,7 +376,8 @@ function InitialInvestmentSlider({ value, onChange }: InitialInvestmentSliderPro
     const rect = sliderRef.current.getBoundingClientRect();
     const ratio = rect.width === 0 ? 0 : Math.max(0, Math.min(clientX - rect.left, rect.width)) / rect.width;
     const nextValue = ratioToValue(ratio);
-    commitValue(nextValue);
+    const snapped = INITIAL_PRESET_STOPS[findNearestPresetIndex(nextValue)];
+    commitValue(snapped);
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
@@ -423,24 +424,26 @@ function InitialInvestmentSlider({ value, onChange }: InitialInvestmentSliderPro
     if (stepDirection !== 0) {
       event.preventDefault();
       const nearestIndex = findNearestPresetIndex(value);
-      const lower = INITIAL_PRESET_STOPS[Math.max(nearestIndex - 1, 0)];
-      const upper = INITIAL_PRESET_STOPS[Math.min(nearestIndex + 1, INITIAL_PRESET_STOPS.length - 1)];
-      const segment = Math.max(100, Math.round((upper - lower) / 10));
-      commitValue(value + stepDirection * segment);
+      const nextIndex = Math.min(
+        Math.max(nearestIndex + stepDirection, 0),
+        INITIAL_PRESET_STOPS.length - 1
+      );
+      commitValue(INITIAL_PRESET_STOPS[nextIndex]);
     }
   };
 
   const handleCustomBlur = () => {
-    const numericValue = Math.max(0, Number(customValue) || 0);
+    const numericValue = Math.max(0, Math.round(Number(customValue) || 0));
     setCustomValue(numericValue.toString());
     onChange(numericValue);
     setAnimationKey((prev) => prev + 1);
   };
 
-  const sliderRatio = valueToRatio(value);
-  const nearestStopIndex = findNearestPresetIndex(value);
+  const roundedValue = Math.max(0, Math.round(value || 0));
+  const sliderRatio = valueToRatio(roundedValue);
+  const nearestStopIndex = findNearestPresetIndex(roundedValue);
   const progress = sliderRatio * 100;
-  const displayAmount = value || 0;
+  const displayAmount = roundedValue;
 
   return (
     <div className="space-y-3 rounded-lg border border-slate-200 bg-white/70 p-3 shadow-sm">
