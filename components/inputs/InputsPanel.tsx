@@ -1,17 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { SectionHeader } from "./SectionHeader";
-import { OneTimeBoostsSection } from "./OneTimeBoostsSection";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { TooltipIcon } from "./TooltipIcon";
 import clsx from "clsx";
-import { Inputs, OneTimeBoost } from "@/lib/calculations/calculateProjection";
+import { Inputs } from "@/lib/calculations/calculateProjection";
 import { ContributionSelector } from "./ContributionSelector";
-import { ChevronDown } from "lucide-react";
 
 const INTEREST_RATE_OPTIONS = [3, 5, 7, 10];
 const CONTRIBUTE_YEAR_OPTIONS = [10, 20, 30];
@@ -40,13 +38,6 @@ interface InputsPanelProps {
 
 export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
   const [draft, setDraft] = useState<Inputs>(inputs);
-  const [boostMode, setBoostMode] = useState<"none" | "add">(
-    (inputs.boosts || []).some((boost) => boost.amount || boost.year || boost.label) ? "add" : "none"
-  );
-  const [savedBoosts, setSavedBoosts] = useState<OneTimeBoost[]>(inputs.boosts || []);
-  const [showBoosts, setShowBoosts] = useState(() =>
-    (inputs.boosts || []).some((boost) => boost.amount || boost.year || boost.label)
-  );
 
   useEffect(() => {
     const id = setTimeout(() => onChange(draft), 250);
@@ -57,39 +48,10 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
     setDraft(inputs);
   }, [inputs]);
 
-  useEffect(() => {
-    const hasBoosts = (inputs.boosts || []).some((boost) => boost.amount || boost.year || boost.label);
-    setBoostMode(hasBoosts ? "add" : "none");
-    if (hasBoosts) {
-      setSavedBoosts(inputs.boosts || []);
-      setShowBoosts(true);
-    }
-  }, [inputs.boosts]);
-
   const updateField = <K extends keyof Inputs>(key: K, value: Inputs[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }));
   };
-
-  const boostValues = useMemo(() => draft.boosts || [], [draft.boosts]);
   const showDurationWarning = draft.projectYears < draft.contributeYears;
-  const hasBoostsConfigured = useMemo(
-    () => boostValues.some((boost) => boost.amount || boost.year || boost.label),
-    [boostValues]
-  );
-
-  const handleBoostModeChange = (mode: "none" | "add") => {
-    setBoostMode(mode);
-    if (mode === "none") {
-      if (hasBoostsConfigured) {
-        setSavedBoosts(boostValues);
-      }
-      updateField("boosts", [] as OneTimeBoost[]);
-      return;
-    }
-
-    const nextBoosts = boostValues.length ? boostValues : savedBoosts;
-    updateField("boosts", (nextBoosts || []) as OneTimeBoost[]);
-  };
 
   return (
     <Card className="sticky top-6 h-fit w-full max-w-[420px] border-slate-200 bg-white/90 shadow-subtle">
@@ -97,14 +59,14 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
         <p className="text-sm uppercase tracking-wide text-slate-500">Inputs</p>
         <h2 className="text-xl font-semibold text-slate-900">Plan your growth</h2>
         <p className="text-sm text-slate-600">
-          Adjust the knobs to see how recurring contributions and boosts shape your balance.
+          Adjust the knobs to see how your recurring contributions shape your balance.
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 shadow-subtle">
           <SectionHeader
             title="Contributions"
-            tooltip="Set your recurring contributions and optional boosts to power your plan."
+            tooltip="Set your starting amount and recurring contributions to power your plan."
           />
           <div className="space-y-5">
             <InitialInvestmentSlider value={draft.initialDeposit} onChange={(val) => updateField("initialDeposit", val)} />
@@ -116,104 +78,6 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
               tooltip="Your planned monthly contribution."
             />
 
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => setShowBoosts((prev) => !prev)}
-                className="flex w-full items-center justify-between rounded-lg px-2 py-1 text-left text-sm font-semibold text-slate-800 transition hover:text-slate-900"
-                aria-expanded={showBoosts}
-              >
-                <span className="flex items-center gap-2">One-time boosts (optional)</span>
-                <ChevronDown
-                  className="h-4 w-4 text-slate-500 transition-transform"
-                  style={{
-                    transform: `rotate(${showBoosts ? 180 : 0}deg)`,
-                    transitionTimingFunction: EASING,
-                    transitionDuration: "200ms"
-                  }}
-                />
-              </button>
-
-              <div
-                className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white/80"
-                style={{
-                  maxHeight: showBoosts ? 1200 : 0,
-                  transition: `max-height ${showBoosts ? 300 : 240}ms ${EASING}`
-                }}
-              >
-                <div
-                  className={clsx(
-                    "space-y-5 px-4 pb-5 pt-2",
-                    showBoosts ? "opacity-100 translate-y-0" : "pointer-events-none translate-y-[6px] opacity-0"
-                  )}
-                  style={{
-                    transition: `opacity 200ms ${EASING} ${showBoosts ? "50ms" : "0ms"}, transform 220ms ${EASING} ${
-                      showBoosts ? "50ms" : "0ms"
-                    }`
-                  }}
-                >
-                  <div className="space-y-3 rounded-xl border border-slate-200/90 bg-slate-50/70 p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold text-slate-800">One-time boosts</p>
-                        <p className="text-xs text-slate-600">Add occasional amounts like bonuses or windfalls.</p>
-                      </div>
-                      <div className="inline-flex rounded-full bg-white p-1 shadow-subtle">
-                        {(["none", "add"] as const).map((option) => {
-                          const isSelected = boostMode === option;
-                          return (
-                            <Button
-                              key={option}
-                              type="button"
-                              variant={isSelected ? "secondary" : "ghost"}
-                              size="sm"
-                              className={clsx(
-                                "rounded-full px-3 font-semibold capitalize transition",
-                                isSelected ? "shadow-sm" : "text-slate-700"
-                              )}
-                              style={{ transitionTimingFunction: EASING, transitionDuration: "180ms" }}
-                              onClick={() => handleBoostModeChange(option)}
-                              aria-pressed={isSelected}
-                            >
-                              {option === "none" ? "None" : "Add boosts"}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div
-                      className="overflow-hidden"
-                      style={{
-                        maxHeight: boostMode === "add" ? 720 : 0,
-                        transition: `max-height ${boostMode === "add" ? 260 : 220}ms ${EASING}`
-                      }}
-                    >
-                      <div
-                        className={clsx(
-                          "space-y-3 pt-2",
-                          boostMode === "add"
-                            ? "opacity-100 translate-y-0"
-                            : "pointer-events-none translate-y-[6px] opacity-0"
-                        )}
-                        style={{
-                          transition: `opacity 200ms ${EASING} ${boostMode === "add" ? "50ms" : "0ms"}, transform 220ms ${EASING} ${
-                            boostMode === "add" ? "50ms" : "0ms"
-                          }`
-                        }}
-                      >
-                        <OneTimeBoostsSection
-                          boosts={boostValues}
-                          onChange={(next) => updateField("boosts", next as OneTimeBoost[])}
-                          maxYear={draft.projectYears}
-                          showHeader={false}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 

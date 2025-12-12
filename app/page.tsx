@@ -15,7 +15,7 @@ const defaultInputs: Inputs = {
   contributeYears: 20,
   projectYears: 30,
   interestRate: 7,
-  boosts: [{ year: 5, amount: 5000, label: "Bonus" }]
+  boosts: []
 };
 
 export default function HomePage() {
