@@ -138,13 +138,14 @@ export function ContributionSelector({ value, onChange, label = "Contribution Am
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 pt-1">
           <Button
             type="button"
             variant="ghost"
             onClick={() => setIsExpanded((prev) => !prev)}
             aria-expanded={isExpanded}
-            className="flex items-center gap-1 text-slate-700"
+            size="sm"
+            className="flex items-center gap-1 px-0 text-slate-700 hover:bg-transparent"
           >
             <ChevronDown
               className="h-4 w-4 transition-transform"
