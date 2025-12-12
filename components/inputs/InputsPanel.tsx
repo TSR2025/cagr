@@ -9,13 +9,19 @@ import { NumericField } from "./NumericField";
 import { SelectField } from "./SelectField";
 import { SectionHeader } from "./SectionHeader";
 import { OneTimeBoostsSection } from "./OneTimeBoostsSection";
-import { TooltipIcon } from "./TooltipIcon";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Inputs,
   OneTimeBoost,
   ContributionFrequency,
   Compounding
 } from "@/lib/calculations/calculateProjection";
+
+const CONTRIBUTION_FREQUENCIES: { value: ContributionFrequency; label: string }[] = [
+  { value: "monthly", label: "Monthly" },
+  { value: "yearly", label: "Yearly" }
+];
 
 interface InputsPanelProps {
   inputs: Inputs;
@@ -112,18 +118,29 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
             value={draft.recurringAmount}
             onChange={(val) => updateField("recurringAmount", val)}
           />
-          <SelectField
-            id="recurringFrequency"
-            label="Contribution Frequency"
-            value={draft.recurringFrequency}
-            onValueChange={(val) =>
-              updateField("recurringFrequency", val as ContributionFrequency)
-            }
-            options={[
-              { value: "monthly", label: "Monthly" },
-              { value: "yearly", label: "Yearly" }
-            ]}
-          />
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label className="text-sm font-medium text-slate-600">Contribution Frequency</Label>
+            </div>
+            <div className="grid grid-cols-2 gap-2" role="group" aria-label="Contribution frequency">
+              {CONTRIBUTION_FREQUENCIES.map((option) => {
+                const isSelected = draft.recurringFrequency === option.value;
+
+                return (
+                  <Button
+                    key={option.value}
+                    type="button"
+                    variant={isSelected ? "secondary" : "outline"}
+                    className="w-full"
+                    aria-pressed={isSelected}
+                    onClick={() => updateField("recurringFrequency", option.value)}
+                  >
+                    {option.label}
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
           <NumericField
             id="recurringYears"
             label="Contribute For (years)"
