@@ -8,6 +8,7 @@ const baseInputs: Inputs = {
   contributeYears: 2,
   projectYears: 5,
   interestRate: 6,
+  currentAge: 25,
   boosts: [{ year: 3, amount: 2000 }]
 };
 

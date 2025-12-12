@@ -10,6 +10,7 @@ export interface Inputs {
   contributeYears: number;
   projectYears: number;
   interestRate: number;
+  currentAge: number;
   boosts: OneTimeBoost[];
 }
 
@@ -35,7 +36,8 @@ export function calculateProjection(inputs: Inputs): ProjectionResult {
     contributeYears,
     projectYears,
     interestRate,
-    boosts
+    boosts,
+    currentAge: _currentAge
   } = inputs;
 
   const sanitizedBoosts = boosts

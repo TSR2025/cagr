@@ -14,9 +14,10 @@ import { formatCurrency } from "@/lib/utils/formatCurrency";
 
 interface GrowthChartProps {
   data: ProjectionResult;
+  currentAge: number;
 }
 
-export function GrowthChart({ data }: GrowthChartProps) {
+export function GrowthChart({ data, currentAge }: GrowthChartProps) {
   return (
     <div className="w-full rounded-2xl border border-slate-200 bg-white/90 p-6 pb-8">
       <div className="space-y-3">
@@ -69,7 +70,7 @@ export function GrowthChart({ data }: GrowthChartProps) {
                 const record = payload[0].payload;
                 return (
                   <div className="rounded-lg bg-slate-900/90 px-4 py-3 text-sm text-white shadow-lg">
-                    <p className="font-semibold">Year {label}</p>
+                    <p className="font-semibold">Year {label} · Age {currentAge + Number(label)}</p>
                     <p className="text-slate-200">Balance: {formatCurrency(record.balance)}</p>
                     <p className="text-slate-200">Contributions: {formatCurrency(record.totalContributions)}</p>
                     <p className="text-slate-200">Interest: {formatCurrency(record.totalInterest)}</p>
