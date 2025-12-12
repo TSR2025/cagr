@@ -24,14 +24,9 @@ export function MilestoneTable({ data }: MilestoneTableProps) {
   return (
     <Card className="border-slate-200 bg-white/90">
       <CardHeader className="px-6 pt-5 pb-0">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            <h3 className="text-base font-semibold text-slate-900">Milestones (every 5 years)</h3>
-            <p className="text-sm text-slate-500">Stacked contributions and growth by milestone year</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Final: {formatCurrency(data.finalBalance)}</p>
-          </div>
+        <div className="space-y-1">
+          <h3 className="text-base font-semibold text-slate-900">Milestones (every 5 years)</h3>
+          <p className="text-sm text-slate-500">Stacked contributions and growth by milestone year</p>
         </div>
       </CardHeader>
       <CardContent className="h-[360px] pt-4 pb-6 px-6">
