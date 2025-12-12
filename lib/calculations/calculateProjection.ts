@@ -1,4 +1,3 @@
-export type ContributionFrequency = "monthly" | "yearly";
 export type Compounding = "monthly" | "yearly";
 
 export interface OneTimeBoost {
@@ -10,7 +9,6 @@ export interface OneTimeBoost {
 export interface Inputs {
   initialDeposit: number;
   recurringAmount: number;
-  recurringFrequency: ContributionFrequency;
   recurringYears: number;
   projectionYears: number;
   interestRate: number;
@@ -37,7 +35,6 @@ export function calculateProjection(inputs: Inputs): ProjectionResult {
   const {
     initialDeposit,
     recurringAmount,
-    recurringFrequency,
     recurringYears,
     projectionYears,
     interestRate,
@@ -66,13 +63,8 @@ export function calculateProjection(inputs: Inputs): ProjectionResult {
       const isFirstMonthOfYear = month % 12 === 1;
 
       if (currentYear <= recurringYears) {
-        if (recurringFrequency === "monthly") {
-          balance += recurringAmount;
-          totalContributions += recurringAmount;
-        } else if (recurringFrequency === "yearly" && isFirstMonthOfYear) {
-          balance += recurringAmount;
-          totalContributions += recurringAmount;
-        }
+        balance += recurringAmount;
+        totalContributions += recurringAmount;
       }
 
       const boost = sanitizedBoosts.find((b) => b.year === currentYear && isFirstMonthOfYear);
@@ -98,7 +90,7 @@ export function calculateProjection(inputs: Inputs): ProjectionResult {
     const annualRate = interestRate / 100;
     for (let year = 1; year <= projectionYears; year++) {
       if (year <= recurringYears) {
-        const contribution = recurringFrequency === "monthly" ? recurringAmount * 12 : recurringAmount;
+        const contribution = recurringAmount * 12;
         balance += contribution;
         totalContributions += contribution;
       }
