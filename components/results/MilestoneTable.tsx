@@ -23,21 +23,15 @@ interface MilestoneTableProps {
 export function MilestoneTable({ data }: MilestoneTableProps) {
   return (
     <Card className="border-slate-200 bg-white/90">
-      <CardHeader className="px-4 pt-4 pb-2">
-        <div className="flex items-center justify-between">
+      <CardHeader className="px-4 pt-4 pb-1">
+        <div className="flex items-start justify-between">
           <div>
             <h3 className="text-base font-semibold text-slate-900">Milestones (Every 5 Years)</h3>
             <p className="text-sm text-slate-500">Stacked contributions and growth by milestone year</p>
           </div>
-          <div className="hidden items-center gap-3 text-xs font-medium text-slate-600 sm:flex">
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-sky-500" aria-hidden />
-              <span>Contributions</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-amber-400" aria-hidden />
-              <span>Growth</span>
-            </div>
+          <div className="text-right">
+            <p className="text-xs uppercase tracking-wide text-slate-500">Projected total</p>
+            <p className="text-base font-semibold text-slate-900">{formatCurrency(data.finalBalance)}</p>
           </div>
         </div>
       </CardHeader>
@@ -68,16 +62,16 @@ export function MilestoneTable({ data }: MilestoneTableProps) {
               }}
             />
             <Legend
-              verticalAlign="top"
-              align="right"
+              verticalAlign="bottom"
+              align="center"
               iconType="circle"
-              wrapperStyle={{ paddingRight: 12, paddingTop: 4 }}
+              wrapperStyle={{ paddingTop: 4 }}
               formatter={(value) => <span className="text-xs text-slate-600">{value}</span>}
             />
             <Bar dataKey="totalContributions" name="Contributions" stackId="balance" fill="#0ea5e9" radius={[4, 4, 0, 0]}>
               <LabelList
                 dataKey="totalContributions"
-                position="insideTop"
+                position="inside"
                 formatter={(value: number) => formatCompactCurrency(value)}
                 fill="#0f172a"
                 fontSize={12}
@@ -86,7 +80,14 @@ export function MilestoneTable({ data }: MilestoneTableProps) {
             <Bar dataKey="totalInterest" name="Growth" stackId="balance" fill="#f59e0b" radius={[4, 4, 0, 0]}>
               <LabelList
                 dataKey="totalInterest"
-                position="insideTop"
+                position="inside"
+                formatter={(value: number) => formatCompactCurrency(value)}
+                fill="#0f172a"
+                fontSize={12}
+              />
+              <LabelList
+                dataKey="balance"
+                position="top"
                 formatter={(value: number) => formatCompactCurrency(value)}
                 fill="#0f172a"
                 fontSize={12}
