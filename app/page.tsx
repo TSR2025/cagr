@@ -8,6 +8,7 @@ import {
 } from "@/lib/calculations/calculateProjection";
 import { InputsPanel } from "@/components/inputs/InputsPanel";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
+import { DEFAULT_CURRENT_AGE } from "@/lib/utils/sanitizeAge";
 
 const defaultInputs: Inputs = {
   initialDeposit: 10000,
@@ -15,6 +16,7 @@ const defaultInputs: Inputs = {
   contributeYears: 20,
   projectYears: 30,
   interestRate: 7,
+  currentAge: DEFAULT_CURRENT_AGE,
   boosts: []
 };
 
@@ -30,7 +32,7 @@ export default function HomePage() {
           <InputsPanel inputs={inputs} onChange={setInputs} />
         </div>
         <div className="order-1 lg:order-2">
-          <ResultsPanel data={projection} />
+          <ResultsPanel data={projection} currentAge={inputs.currentAge} />
         </div>
       </div>
     </main>

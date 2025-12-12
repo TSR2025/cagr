@@ -10,6 +10,7 @@ import { TooltipIcon } from "./TooltipIcon";
 import clsx from "clsx";
 import { Inputs } from "@/lib/calculations/calculateProjection";
 import { ContributionSelector } from "./ContributionSelector";
+import { DEFAULT_CURRENT_AGE, deriveEndAges, sanitizeAge } from "@/lib/utils/sanitizeAge";
 
 const INTEREST_RATE_OPTIONS = [3, 5, 7, 10];
 const CONTRIBUTE_YEAR_OPTIONS = [10, 20, 30];
@@ -52,6 +53,11 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
     setDraft((prev) => ({ ...prev, [key]: value }));
   };
   const showDurationWarning = draft.projectYears < draft.contributeYears;
+  const { endAge, contribEndAge } = deriveEndAges(
+    draft.currentAge,
+    draft.contributeYears,
+    draft.projectYears
+  );
 
   return (
     <Card className="sticky top-6 h-fit w-full max-w-[420px] border-slate-200 bg-white/90 shadow-subtle">
@@ -87,6 +93,54 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
             tooltip="Set how long you plan to contribute and how far out to project your balance."
           />
           <div className="space-y-3">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <Label className="text-sm font-medium text-slate-700" htmlFor="current-age">
+                  Current age
+                </Label>
+                <p className="text-xs text-slate-500">Used to show how old you’ll be at each milestone</p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Decrease current age"
+                  onClick={() => {
+                    const nextAge = sanitizeAge(draft.currentAge - 1, draft.currentAge);
+                    updateField("currentAge", nextAge);
+                  }}
+                >
+                  −
+                </Button>
+                <Input
+                  id="current-age"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={draft.currentAge}
+                  onChange={(event) => {
+                    const nextAge = sanitizeAge(event.target.value, DEFAULT_CURRENT_AGE);
+                    updateField("currentAge", nextAge);
+                  }}
+                  className="w-20 text-center"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Increase current age"
+                  onClick={() => {
+                    const nextAge = sanitizeAge(draft.currentAge + 1, draft.currentAge);
+                    updateField("currentAge", nextAge);
+                  }}
+                >
+                  +
+                </Button>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label className="text-sm font-medium text-slate-700">Contribute for (years)</Label>
               <div className="flex gap-2" role="group" aria-label="Contribute for (years)">
@@ -137,6 +191,9 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
             {showDurationWarning && (
               <p className="text-xs text-amber-600">Projection horizon is shorter than the contribution period.</p>
             )}
+            <p className="text-xs text-slate-600">
+              You’ll be {endAge} at the end of this projection{contribEndAge !== endAge ? `. Contributions stop at age ${contribEndAge}.` : "."}
+            </p>
           </div>
         </div>
 

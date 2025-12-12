@@ -11,9 +11,10 @@ import { ExpandToggle } from "./ExpandToggle";
 
 interface ResultsPanelProps {
   data: ProjectionResult;
+  currentAge: number;
 }
 
-export function ResultsPanel({ data }: ResultsPanelProps) {
+export function ResultsPanel({ data, currentAge }: ResultsPanelProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -27,8 +28,8 @@ export function ResultsPanel({ data }: ResultsPanelProps) {
       </div>
 
       <SummaryStats data={data} />
-      <GrowthChart data={data} />
-      <MilestoneTable data={data} />
+      <GrowthChart data={data} currentAge={currentAge} />
+      <MilestoneTable data={data} currentAge={currentAge} />
 
       <div className="space-y-3">
         <ExpandToggle expanded={expanded} onToggle={() => setExpanded((p) => !p)} />
