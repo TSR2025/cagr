@@ -5,8 +5,8 @@ import { calculateProjection, Inputs } from "../lib/calculations/calculateProjec
 const baseInputs: Inputs = {
   initialDeposit: 10000,
   recurringAmount: 500,
-  recurringYears: 2,
-  projectionYears: 5,
+  contributeYears: 2,
+  projectYears: 5,
   interestRate: 6,
   boosts: [{ year: 3, amount: 2000 }]
 };
@@ -15,9 +15,9 @@ test("calculates projection with principal only", () => {
   const principalOnly: Inputs = {
     ...baseInputs,
     recurringAmount: 0,
-    recurringYears: 0,
+    contributeYears: 0,
     boosts: [],
-    projectionYears: 3
+    projectYears: 3
   };
 
   const result = calculateProjection(principalOnly);
@@ -33,8 +33,8 @@ test("applies monthly contributions at the start of each month", () => {
     ...baseInputs,
     initialDeposit: 0,
     recurringAmount: 100,
-    recurringYears: 1,
-    projectionYears: 1,
+    contributeYears: 1,
+    projectYears: 1,
     interestRate: 0,
     boosts: []
   };
@@ -51,8 +51,8 @@ test("applies boosts at the start of the boost year", () => {
     ...baseInputs,
     initialDeposit: 1000,
     recurringAmount: 200,
-    recurringYears: 1,
-    projectionYears: 2,
+    contributeYears: 1,
+    projectYears: 2,
     interestRate: 12,
     boosts: [{ year: 2, amount: 500 }]
   };
@@ -62,11 +62,11 @@ test("applies boosts at the start of the boost year", () => {
     let totalContributions = inputsWithBoost.initialDeposit;
     const monthlyFactor = Math.pow(1 + inputsWithBoost.interestRate / 100, 1 / 12);
 
-    for (let month = 1; month <= inputsWithBoost.projectionYears * 12; month++) {
+    for (let month = 1; month <= inputsWithBoost.projectYears * 12; month++) {
       const currentYear = Math.ceil(month / 12);
       const isFirstMonthOfYear = month % 12 === 1;
 
-      if (currentYear <= inputsWithBoost.recurringYears) {
+      if (currentYear <= inputsWithBoost.contributeYears) {
         balance += inputsWithBoost.recurringAmount;
         totalContributions += inputsWithBoost.recurringAmount;
       }

@@ -12,8 +12,8 @@ import { ResultsPanel } from "@/components/results/ResultsPanel";
 const defaultInputs: Inputs = {
   initialDeposit: 10000,
   recurringAmount: 750,
-  recurringYears: 20,
-  projectionYears: 30,
+  contributeYears: 20,
+  projectYears: 30,
   interestRate: 7,
   boosts: [{ year: 5, amount: 5000, label: "Bonus" }]
 };
