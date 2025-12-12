@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { NumericField } from "./NumericField";
 import { SectionHeader } from "./SectionHeader";
@@ -15,6 +15,8 @@ import { ContributionSelector } from "./ContributionSelector";
 import { TooltipIcon } from "./TooltipIcon";
 
 const INTEREST_RATE_OPTIONS = [3, 5, 7, 10];
+const CONTRIBUTE_YEAR_OPTIONS = [10, 20, 30];
+const PROJECT_YEAR_OPTIONS = [20, 30, 40];
 
 interface InputsPanelProps {
   inputs: Inputs;
@@ -38,11 +40,6 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
   };
 
   const boostValues = useMemo(() => draft.boosts || [], [draft.boosts]);
-
-  const ensureProjection = (value: number) => {
-    const nextProjection = Math.max(value, draft.recurringYears);
-    updateField("projectionYears", nextProjection);
-  };
 
   return (
     <Card className="sticky top-6 h-fit w-full max-w-[420px] border-slate-200 bg-white/90 shadow-subtle">
@@ -96,30 +93,25 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
             onChange={(val) => updateField("recurringAmount", val)}
             tooltip="Your planned monthly contribution."
           />
-          <NumericField
-            id="recurringYears"
-            label="Contribute For (years)"
-            value={draft.recurringYears}
-            min={1}
-            onChange={(val) => {
-              updateField("recurringYears", val);
-              if (val > draft.projectionYears) {
-                updateField("projectionYears", val);
-              }
-            }}
-            tooltip="How long you plan to keep contributing (in years)."
-          />
         </div>
 
         <div className="space-y-3">
-          <SectionHeader title="Projection" />
-          <NumericField
-            id="projectionYears"
-            label="Project Over (years)"
-            value={draft.projectionYears}
-            min={draft.recurringYears}
-            onChange={(val) => ensureProjection(val)}
-            tooltip="How long we should show your money growing (overall horizon)."
+          <SectionHeader title="Time Horizon" />
+          <HorizonRow
+            label="Contribute for (years)"
+            options={CONTRIBUTE_YEAR_OPTIONS}
+            selected={draft.recurringYears}
+            onSelect={(value) => updateField("recurringYears", value)}
+          />
+          <HorizonRow
+            label="Project over (years)"
+            options={PROJECT_YEAR_OPTIONS}
+            selected={draft.projectionYears}
+            onSelect={(value) => updateField("projectionYears", value)}
+          />
+          <TimelineVisualization
+            contributeYears={draft.recurringYears}
+            projectYears={draft.projectionYears}
           />
         </div>
 
@@ -130,5 +122,110 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
         />
       </CardContent>
     </Card>
+  );
+}
+
+interface HorizonRowProps {
+  label: string;
+  options: number[];
+  selected: number;
+  onSelect: (value: number) => void;
+}
+
+function HorizonRow({ label, options, selected, onSelect }: HorizonRowProps) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <Label className="text-sm font-medium text-slate-600">{label}</Label>
+      </div>
+      <div className="flex gap-2" role="group" aria-label={label}>
+        {options.map((option) => {
+          const isSelected = option === selected;
+
+          return (
+            <Button
+              key={option}
+              type="button"
+              variant={isSelected ? "secondary" : "outline"}
+              className="flex-1"
+              aria-pressed={isSelected}
+              onClick={() => onSelect(option)}
+            >
+              {option}
+            </Button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+interface TimelineVisualizationProps {
+  contributeYears: number;
+  projectYears: number;
+}
+
+function TimelineVisualization({ contributeYears, projectYears }: TimelineVisualizationProps) {
+  const [showLabel, setShowLabel] = useState(false);
+  const touchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const maxProjectYears = Math.max(...PROJECT_YEAR_OPTIONS);
+  const containerPercent = (projectYears / maxProjectYears) * 100;
+  const fillPercent =
+    projectYears === 0 ? 0 : Math.min((contributeYears / projectYears) * 100, 100);
+  const postContributionYears = Math.max(projectYears - contributeYears, 0);
+  const showWarning = projectYears < contributeYears;
+
+  const revealLabel = () => setShowLabel(true);
+  const hideLabel = () => setShowLabel(false);
+
+  const handleTouchStart = () => {
+    revealLabel();
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+    }
+    touchTimeoutRef.current = setTimeout(() => setShowLabel(false), 1500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (touchTimeoutRef.current) {
+        clearTimeout(touchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-start">
+        <div
+          tabIndex={0}
+          className="group relative transition-[width] duration-300 ease-out focus:outline-none"
+          style={{ width: `${containerPercent}%` }}
+          onMouseEnter={revealLabel}
+          onMouseLeave={hideLabel}
+          onFocus={revealLabel}
+          onBlur={hideLabel}
+          onTouchStart={handleTouchStart}
+        >
+          <div className="relative h-3 overflow-hidden rounded-full bg-slate-200/90">
+            <div
+              className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-blue-500 to-sky-400 transition-[width] duration-200 ease-out"
+              style={{ width: `${fillPercent}%` }}
+            />
+          </div>
+          {showLabel && (
+            <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 -translate-y-[120%] rounded-full bg-white/95 px-2 py-0.5 text-xs font-medium text-slate-700 shadow-subtle">
+              {contributeYears} yrs contributing • {postContributionYears} yrs growing
+            </div>
+          )}
+        </div>
+      </div>
+      {showWarning && (
+        <p className="text-xs text-amber-600">
+          Projection horizon is shorter than the contribution period. Calculations will still run.
+        </p>
+      )}
+    </div>
   );
 }
