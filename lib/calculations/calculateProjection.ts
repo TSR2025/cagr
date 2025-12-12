@@ -7,8 +7,8 @@ export interface OneTimeBoost {
 export interface Inputs {
   initialDeposit: number;
   recurringAmount: number;
-  recurringYears: number;
-  projectionYears: number;
+  contributeYears: number;
+  projectYears: number;
   interestRate: number;
   boosts: OneTimeBoost[];
 }
@@ -32,14 +32,14 @@ export function calculateProjection(inputs: Inputs): ProjectionResult {
   const {
     initialDeposit,
     recurringAmount,
-    recurringYears,
-    projectionYears,
+    contributeYears,
+    projectYears,
     interestRate,
     boosts
   } = inputs;
 
   const sanitizedBoosts = boosts
-    .filter((b) => b.amount > 0 && b.year >= 1 && b.year <= projectionYears)
+    .filter((b) => b.amount > 0 && b.year >= 1 && b.year <= projectYears)
     .slice(0, 5);
 
   const yearly: YearRecord[] = [{
@@ -54,11 +54,11 @@ export function calculateProjection(inputs: Inputs): ProjectionResult {
 
   const monthlyFactor = Math.pow(1 + interestRate / 100, 1 / 12);
 
-  for (let month = 1; month <= projectionYears * 12; month++) {
+  for (let month = 1; month <= projectYears * 12; month++) {
     const currentYear = Math.ceil(month / 12);
     const isFirstMonthOfYear = month % 12 === 1;
 
-    if (currentYear <= recurringYears) {
+    if (currentYear <= contributeYears) {
       balance += recurringAmount;
       totalContributions += recurringAmount;
     }
