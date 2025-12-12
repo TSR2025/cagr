@@ -93,24 +93,52 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
             tooltip="Set how long you plan to contribute and how far out to project your balance."
           />
           <div className="space-y-3">
-            <div className="space-y-1.5">
-              <Label className="text-sm font-medium text-slate-700" htmlFor="current-age">
-                Current age
-              </Label>
-              <Input
-                id="current-age"
-                type="number"
-                min={0}
-                max={100}
-                step={1}
-                value={draft.currentAge}
-                onChange={(event) => {
-                  const nextAge = sanitizeAge(event.target.value, DEFAULT_CURRENT_AGE);
-                  updateField("currentAge", nextAge);
-                }}
-                className="max-w-[180px]"
-              />
-              <p className="text-xs text-slate-500">Used to show how old you’ll be at each milestone</p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1">
+                <Label className="text-sm font-medium text-slate-700" htmlFor="current-age">
+                  Current age
+                </Label>
+                <p className="text-xs text-slate-500">Used to show how old you’ll be at each milestone</p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Decrease current age"
+                  onClick={() => {
+                    const nextAge = sanitizeAge(draft.currentAge - 1, draft.currentAge);
+                    updateField("currentAge", nextAge);
+                  }}
+                >
+                  −
+                </Button>
+                <Input
+                  id="current-age"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={draft.currentAge}
+                  onChange={(event) => {
+                    const nextAge = sanitizeAge(event.target.value, DEFAULT_CURRENT_AGE);
+                    updateField("currentAge", nextAge);
+                  }}
+                  className="w-20 text-center"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  aria-label="Increase current age"
+                  onClick={() => {
+                    const nextAge = sanitizeAge(draft.currentAge + 1, draft.currentAge);
+                    updateField("currentAge", nextAge);
+                  }}
+                >
+                  +
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-2">

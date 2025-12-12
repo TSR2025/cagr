@@ -53,6 +53,7 @@ export function GrowthChart({ data, currentAge }: GrowthChartProps) {
             <XAxis
               dataKey="year"
               ticks={[0, 5, 10, 15, 20, 25, 30]}
+              tickFormatter={(year) => `Age ${currentAge + Number(year)}`}
               tick={{ fill: "#475569", fontSize: 12 }}
               axisLine={false}
               tickLine={false}
