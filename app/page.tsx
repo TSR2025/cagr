@@ -12,7 +12,7 @@ import { ResultsPanel } from "@/components/results/ResultsPanel";
 
 const defaultInputs: Inputs = {
   initialDeposit: 10000,
-  recurringAmount: 500,
+  recurringAmount: 750,
   recurringYears: 20,
   projectionYears: 30,
   interestRate: 7,

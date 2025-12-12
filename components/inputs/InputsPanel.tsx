@@ -8,6 +8,7 @@ import { SectionHeader } from "./SectionHeader";
 import { OneTimeBoostsSection } from "./OneTimeBoostsSection";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { ContributionSelector } from "./ContributionSelector";
 import {
   Inputs,
   OneTimeBoost,
@@ -99,13 +100,7 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
 
         <div className="space-y-3">
           <SectionHeader title="Recurring Contributions" />
-          <NumericField
-            id="recurringAmount"
-            label="Contribution Amount"
-            prefix="$"
-            value={draft.recurringAmount}
-            onChange={(val) => updateField("recurringAmount", val)}
-          />
+          <ContributionSelector value={draft.recurringAmount} onChange={(val) => updateField("recurringAmount", val)} />
           <NumericField
             id="recurringYears"
             label="Contribute For (years)"
