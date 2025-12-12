@@ -443,6 +443,16 @@ function TimelineBar({ contributeYears, projectYears }: TimelineBarProps) {
   const contributionWidth = projectYears
     ? Math.min((contributeYears / projectYears) * 100, 100)
     : 0;
+  const contributionYears = Math.min(contributeYears, projectYears);
+  const growthOnlyYears = Math.max(totalYears - contributionYears, 0);
+
+  const projectWidth = (totalYears / MAX_PROJECT_YEARS) * 100;
+  const contributionWidth = totalYears ? Math.min((contributionYears / totalYears) * 100, 100) : 0;
+
+  const ariaLabelParts = [] as string[];
+  if (contributionYears) ariaLabelParts.push(`${contributionYears} years contributing`);
+  if (growthOnlyYears) ariaLabelParts.push(`${growthOnlyYears} years growing`);
+  const ariaLabel = ariaLabelParts.length ? ariaLabelParts.join(", ") : `${totalYears} year projection`;
 
   const timelineCopy =
     growthOnlyYears === 0
@@ -457,6 +467,7 @@ function TimelineBar({ contributeYears, projectYears }: TimelineBarProps) {
         className="relative flex cursor-default flex-col gap-2"
         aria-label={timelineCopy}
       >
+      <div className="relative flex cursor-default flex-col gap-2" aria-label={ariaLabel}>
         <div className="h-2 w-full rounded-full bg-slate-100">
           <div
             className="relative h-2 rounded-full bg-slate-200"
@@ -471,6 +482,22 @@ function TimelineBar({ contributeYears, projectYears }: TimelineBarProps) {
 
         <div className="text-xs text-slate-600">
           {timelineCopy}
+        <div className="flex flex-col gap-1 text-xs text-slate-600">
+          <div className="font-medium text-slate-700">{`Total projection: ${totalYears} years`}</div>
+
+          <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
+            {growthOnlyYears === 0 && contributionYears ? (
+              <span className="whitespace-nowrap">{`${totalYears} years contributions + growth`}</span>
+            ) : contributionYears === 0 && growthOnlyYears ? (
+              <span className="whitespace-nowrap">{`${totalYears} years growth only`}</span>
+            ) : contributionYears && growthOnlyYears ? (
+              <>
+                <span className="whitespace-nowrap">{`${contributionYears} years contributions + growth`}</span>
+                <span aria-hidden="true">→</span>
+                <span className="whitespace-nowrap">{`${growthOnlyYears} years growth only`}</span>
+              </>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>
