@@ -14,11 +14,13 @@ import {
 } from "@/lib/calculations/calculateProjection";
 import { ContributionSelector } from "./ContributionSelector";
 import { TooltipIcon } from "./TooltipIcon";
+import { ChevronDown } from "lucide-react";
 
 const INTEREST_RATE_OPTIONS = [3, 5, 7, 10];
 const CONTRIBUTE_YEAR_OPTIONS = [10, 20, 30];
 const PROJECT_YEAR_OPTIONS = [20, 30, 40];
 const MAX_PROJECT_YEARS = Math.max(...PROJECT_YEAR_OPTIONS);
+const EASING = "cubic-bezier(0.2, 0.9, 0.2, 1)";
 
 interface InputsPanelProps {
   inputs: Inputs;
@@ -27,6 +29,7 @@ interface InputsPanelProps {
 
 export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
   const [draft, setDraft] = useState<Inputs>(inputs);
+  const [boostsOpen, setBoostsOpen] = useState(false);
 
   useEffect(() => {
     const id = setTimeout(() => onChange(draft), 250);
@@ -42,7 +45,6 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
   };
 
   const boostValues = useMemo(() => draft.boosts || [], [draft.boosts]);
-  const postContributionYears = Math.max(draft.projectYears - draft.contributeYears, 0);
   const showDurationWarning = draft.projectYears < draft.contributeYears;
 
   return (
@@ -55,8 +57,16 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="space-y-3">
-          <SectionHeader title="Starting Point" />
+        <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50/80 p-4 shadow-subtle">
+          <SectionHeader
+            title="Contributions"
+            description="Your primary levers. Start with what you can sustain and layer in boosts later."
+          />
+          <ContributionSelector
+            value={draft.recurringAmount}
+            onChange={(val) => updateField("recurringAmount", val)}
+            tooltip="Your planned monthly contribution."
+          />
           <NumericField
             id="initialDeposit"
             label="Initial Lump Sum"
@@ -64,42 +74,62 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
             value={draft.initialDeposit}
             onChange={(val) => updateField("initialDeposit", val)}
           />
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Label className="text-sm font-medium text-slate-600">Annual Interest Rate</Label>
-              <TooltipIcon text="Average annual return you expect to earn. Returns are annualized; contributions are applied monthly." />
-            </div>
-            <div className="flex gap-2" role="group" aria-label="Annual interest rate">
-              {INTEREST_RATE_OPTIONS.map((option) => {
-                const isSelected = draft.interestRate === option;
 
-                return (
-                  <Button
-                    key={option}
-                    type="button"
-                    variant={isSelected ? "secondary" : "outline"}
-                    className="flex-1"
-                    aria-pressed={isSelected}
-                    onClick={() => updateField("interestRate", option)}
-                  >
-                    {option}%
-                  </Button>
-                );
-              })}
+          <div className="rounded-xl border border-slate-200/90 bg-white/70">
+            <button
+              type="button"
+              onClick={() => setBoostsOpen((prev) => !prev)}
+              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+              aria-expanded={boostsOpen}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-slate-800">One-time boosts (optional)</span>
+                <TooltipIcon text="Add occasional windfalls like bonuses or one-off deposits." />
+              </div>
+              <ChevronDown
+                className="h-4 w-4 text-slate-500 transition-transform"
+                style={{
+                  transform: `rotate(${boostsOpen ? 180 : 0}deg)`,
+                  transitionTimingFunction: EASING,
+                  transitionDuration: "200ms"
+                }}
+              />
+            </button>
+            <div
+              className="overflow-hidden px-4"
+              style={{
+                maxHeight: boostsOpen ? 900 : 0,
+                transition: `max-height ${boostsOpen ? 300 : 240}ms ${EASING}`
+              }}
+            >
+              <div
+                className={clsx(
+                  "space-y-3 pb-4 pt-1",
+                  boostsOpen
+                    ? "opacity-100 translate-y-0"
+                    : "pointer-events-none translate-y-[6px] opacity-0"
+                )}
+                style={{
+                  transition: `opacity 200ms ${EASING} ${boostsOpen ? "50ms" : "0ms"}, transform 220ms ${EASING} ${
+                    boostsOpen ? "50ms" : "0ms"
+                  }`
+                }}
+              >
+                <p className="text-sm text-slate-600">
+                  Add large one-time amounts at specific years, like bonuses or a house sale.
+                </p>
+                <OneTimeBoostsSection
+                  boosts={boostValues}
+                  onChange={(next) => updateField("boosts", next as OneTimeBoost[])}
+                  maxYear={draft.projectYears}
+                  showHeader={false}
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <SectionHeader title="Recurring Contributions" />
-          <ContributionSelector
-            value={draft.recurringAmount}
-            onChange={(val) => updateField("recurringAmount", val)}
-            tooltip="Your planned monthly contribution."
-          />
-        </div>
-
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-subtle">
           <SectionHeader title="Time Horizon" />
           <div className="space-y-3">
             <div className="space-y-2">
@@ -155,11 +185,33 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
           </div>
         </div>
 
-        <OneTimeBoostsSection
-          boosts={boostValues}
-          onChange={(next) => updateField("boosts", next as OneTimeBoost[])}
-          maxYear={draft.projectYears}
-        />
+        <div className="space-y-3 rounded-2xl border border-slate-100 bg-white/60 p-3 shadow-sm">
+          <SectionHeader
+            title="Assumptions"
+            description="Adjust only if you want to model a different return."
+            tooltip="Average annual return you expect to earn. Returns are annualized; contributions are applied monthly."
+          />
+          <div className="space-y-2">
+            <div className="flex gap-2" role="group" aria-label="Annual interest rate">
+              {INTEREST_RATE_OPTIONS.map((option) => {
+                const isSelected = draft.interestRate === option;
+
+                return (
+                  <Button
+                    key={option}
+                    type="button"
+                    variant={isSelected ? "secondary" : "outline"}
+                    className="flex-1"
+                    aria-pressed={isSelected}
+                    onClick={() => updateField("interestRate", option)}
+                  >
+                    {option}%
+                  </Button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
