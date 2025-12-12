@@ -6,6 +6,7 @@ import { NumericField } from "./NumericField";
 import { SelectField } from "./SelectField";
 import { SectionHeader } from "./SectionHeader";
 import { OneTimeBoostsSection } from "./OneTimeBoostsSection";
+import { ContributionAmountGrid } from "./ContributionAmountGrid";
 import {
   Inputs,
   OneTimeBoost,
@@ -80,10 +81,7 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
 
         <div className="space-y-3">
           <SectionHeader title="Recurring Contributions" />
-          <NumericField
-            id="recurringAmount"
-            label="Contribution Amount"
-            prefix="$"
+          <ContributionAmountGrid
             value={draft.recurringAmount}
             onChange={(val) => updateField("recurringAmount", val)}
           />
