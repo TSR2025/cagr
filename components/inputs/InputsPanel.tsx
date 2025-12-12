@@ -13,6 +13,7 @@ import {
   OneTimeBoost,
   Compounding
 } from "@/lib/calculations/calculateProjection";
+import { ContributionSelector } from "./ContributionSelector";
 
 const INTEREST_RATE_OPTIONS = [3, 5, 7, 10];
 
@@ -99,12 +100,10 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
 
         <div className="space-y-3">
           <SectionHeader title="Recurring Contributions" />
-          <NumericField
-            id="recurringAmount"
-            label="Contribution Amount"
-            prefix="$"
+          <ContributionSelector
             value={draft.recurringAmount}
             onChange={(val) => updateField("recurringAmount", val)}
+            tooltip="Your planned monthly contribution."
           />
           <NumericField
             id="recurringYears"
