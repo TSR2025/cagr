@@ -11,15 +11,27 @@ import {
 } from "recharts";
 import { ProjectionResult } from "@/lib/calculations/calculateProjection";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
+import clsx from "clsx";
+import { useEffect, useState } from "react";
 
 interface GrowthChartProps {
   data: ProjectionResult;
   currentAge: number;
+  timePulseSignal: number;
 }
 
-export function GrowthChart({ data, currentAge }: GrowthChartProps) {
+export function GrowthChart({ data, currentAge, timePulseSignal }: GrowthChartProps) {
+  const [isPulsing, setIsPulsing] = useState(false);
+
+  useEffect(() => {
+    if (timePulseSignal === 0) return;
+    setIsPulsing(true);
+    const timeout = window.setTimeout(() => setIsPulsing(false), 360);
+    return () => window.clearTimeout(timeout);
+  }, [timePulseSignal]);
+
   return (
-    <div className="w-full rounded-2xl border border-slate-200 bg-white/90 p-6 pb-8">
+    <div className={clsx("chart-shell w-full rounded-2xl border border-slate-200 bg-white/90 p-6 pb-8", isPulsing && "time-axis-pulse")}>
       <div className="space-y-3">
         <div className="space-y-1.5">
           <h3 className="text-lg font-semibold text-slate-900">Balance over time</h3>
@@ -100,6 +112,32 @@ export function GrowthChart({ data, currentAge }: GrowthChartProps) {
           </AreaChart>
         </ResponsiveContainer>
       </div>
+
+      <style jsx>{`
+        .chart-shell {
+          transition: transform 340ms ease-out;
+        }
+
+        .chart-shell.time-axis-pulse {
+          transform: translateX(1px);
+        }
+
+        .chart-shell :global(.recharts-cartesian-grid line) {
+          transition: opacity 340ms ease-out;
+        }
+
+        .chart-shell :global(.recharts-cartesian-axis-tick-value) {
+          transition: opacity 340ms ease-out;
+        }
+
+        .chart-shell.time-axis-pulse :global(.recharts-cartesian-grid line) {
+          opacity: 0.9;
+        }
+
+        .chart-shell.time-axis-pulse :global(.recharts-cartesian-axis-tick-value) {
+          opacity: 0.95;
+        }
+      `}</style>
     </div>
   );
 }

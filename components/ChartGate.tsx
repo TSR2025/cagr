@@ -1,21 +1,46 @@
 "use client";
 
 import clsx from "clsx";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 interface ChartGateProps {
   isLocked: boolean;
-  overlayTitle?: string;
-  overlaySubtitle?: string;
+  insightTrigger?: number;
+  onInsightComplete?: () => void;
   children: ReactNode;
 }
 
 export function ChartGate({
   isLocked,
-  overlayTitle = "Set your time horizon",
-  overlaySubtitle = "Time does more work than money.",
+  insightTrigger,
+  onInsightComplete,
   children
 }: ChartGateProps) {
+  const [showOverlay, setShowOverlay] = useState(isLocked);
+  const [insightActive, setInsightActive] = useState(false);
+
+  useEffect(() => {
+    if (isLocked) {
+      setShowOverlay(true);
+      return;
+    }
+
+    const timeout = window.setTimeout(() => setShowOverlay(false), 350);
+    return () => window.clearTimeout(timeout);
+  }, [isLocked]);
+
+  useEffect(() => {
+    if (!insightTrigger || insightActive) return;
+
+    setInsightActive(true);
+    const timeout = window.setTimeout(() => {
+      setInsightActive(false);
+      onInsightComplete?.();
+    }, 700);
+
+    return () => window.clearTimeout(timeout);
+  }, [insightActive, insightTrigger, onInsightComplete]);
+
   return (
     <div className="relative">
       <div
@@ -30,29 +55,58 @@ export function ChartGate({
         {children}
       </div>
 
-      <div
-        className={clsx(
-          "absolute inset-0 z-10 flex items-center justify-center p-4",
-          "transition-opacity duration-300 ease-in-out",
-          isLocked ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        )}
-        aria-hidden={!isLocked}
-      >
+      {showOverlay && (
         <div
           className={clsx(
-            "max-w-xs rounded-2xl border border-white/50 bg-white/70 px-5 py-4 text-center shadow-subtle",
-            "backdrop-blur-md"
+            "absolute inset-0 z-10 flex items-center justify-center p-4",
+            "transition-opacity duration-300 ease-in-out",
+            isLocked ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           )}
-          style={{
-            boxShadow: "0 20px 50px -20px rgba(30, 41, 59, 0.25)",
-            pointerEvents: isLocked ? "auto" : "none"
-          }}
+          aria-hidden={!isLocked}
         >
-          <p className="text-sm font-semibold text-slate-900">{overlayTitle}</p>
-          <p className="mt-1 text-xs text-slate-600">{overlaySubtitle}</p>
-          <p className="mt-3 text-xs font-semibold text-slate-700">Adjust age or years to unlock results</p>
+          <div
+            className={clsx(
+              "max-w-xs rounded-2xl border border-white/40 bg-white/75 px-5 py-4 text-center shadow-subtle",
+              "backdrop-blur-md"
+            )}
+            style={{
+              boxShadow: "0 20px 50px -20px rgba(30, 41, 59, 0.25)",
+              pointerEvents: isLocked ? "auto" : "none"
+            }}
+          >
+            <p className="text-sm font-semibold text-slate-900">Your results depend on time</p>
+            <p className="mt-1 text-xs text-slate-600">Compounding rewards consistency over years.</p>
+            <p className="mt-3 text-xs font-semibold text-slate-700">Set your age and time horizon.</p>
+          </div>
         </div>
-      </div>
+      )}
+
+      {insightActive && (
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+          <p className="insight-flash text-sm font-medium text-slate-700">This is what consistency over years does.</p>
+        </div>
+      )}
+
+      <style jsx>{`
+        .insight-flash {
+          animation: insight-fade 700ms ease-in-out forwards;
+        }
+
+        @keyframes insight-fade {
+          0% {
+            opacity: 0;
+          }
+          20% {
+            opacity: 1;
+          }
+          70% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }
