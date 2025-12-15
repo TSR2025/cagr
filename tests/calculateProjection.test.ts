@@ -1,14 +1,14 @@
 import { expect, test } from "vitest";
 
 import { calculateProjection, Inputs } from "../lib/calculations/calculateProjection";
+import { normalizeTimeModel } from "../lib/timeModel";
 
 const baseInputs: Inputs = {
   initialDeposit: 10000,
   recurringAmount: 500,
-  contributeYears: 2,
-  projectYears: 5,
   interestRate: 6,
-  currentAge: 25,
+  startingAge: 30,
+  contributionEndAge: 40,
   boosts: [{ year: 3, amount: 2000 }]
 };
 
@@ -16,13 +16,14 @@ test("calculates projection with principal only", () => {
   const principalOnly: Inputs = {
     ...baseInputs,
     recurringAmount: 0,
-    contributeYears: 0,
-    boosts: [],
-    projectYears: 3
+    contributionEndAge: 30,
+    boosts: []
   };
 
+  const normalized = normalizeTimeModel(principalOnly.startingAge, principalOnly.contributionEndAge);
   const result = calculateProjection(principalOnly);
-  const expected = principalOnly.initialDeposit * Math.pow(1 + principalOnly.interestRate / 100, 3);
+  const expected =
+    principalOnly.initialDeposit * Math.pow(1 + principalOnly.interestRate / 100, normalized.totalYears);
 
   expect(result.finalBalance).toBeCloseTo(expected, 2);
   expect(result.totalContributions).toBeCloseTo(principalOnly.initialDeposit);
@@ -34,16 +35,17 @@ test("applies monthly contributions at the start of each month", () => {
     ...baseInputs,
     initialDeposit: 0,
     recurringAmount: 100,
-    contributeYears: 1,
-    projectYears: 1,
+    contributionEndAge: 31,
     interestRate: 0,
     boosts: []
   };
 
   const result = calculateProjection(contributionsOnly);
+  const normalized = normalizeTimeModel(contributionsOnly.startingAge, contributionsOnly.contributionEndAge);
+  const expectedContributions = normalized.contributionYears * 12 * contributionsOnly.recurringAmount;
 
-  expect(result.finalBalance).toBeCloseTo(1200);
-  expect(result.totalContributions).toBeCloseTo(1200);
+  expect(result.finalBalance).toBeCloseTo(expectedContributions);
+  expect(result.totalContributions).toBeCloseTo(expectedContributions);
   expect(result.totalInterest).toBeCloseTo(0);
 });
 
@@ -52,8 +54,7 @@ test("applies boosts at the start of the boost year", () => {
     ...baseInputs,
     initialDeposit: 1000,
     recurringAmount: 200,
-    contributeYears: 1,
-    projectYears: 2,
+    contributionEndAge: 31,
     interestRate: 12,
     boosts: [{ year: 2, amount: 500 }]
   };
@@ -62,12 +63,15 @@ test("applies boosts at the start of the boost year", () => {
     let balance = inputsWithBoost.initialDeposit;
     let totalContributions = inputsWithBoost.initialDeposit;
     const monthlyFactor = Math.pow(1 + inputsWithBoost.interestRate / 100, 1 / 12);
+    const normalized = normalizeTimeModel(inputsWithBoost.startingAge, inputsWithBoost.contributionEndAge);
+    const totalMonths = normalized.totalYears * 12;
+    const contributionMonths = Math.max(normalized.contributionYears, 0) * 12;
 
-    for (let month = 1; month <= inputsWithBoost.projectYears * 12; month++) {
+    for (let month = 1; month <= totalMonths; month++) {
       const currentYear = Math.ceil(month / 12);
       const isFirstMonthOfYear = month % 12 === 1;
 
-      if (currentYear <= inputsWithBoost.contributeYears) {
+      if (month <= contributionMonths) {
         balance += inputsWithBoost.recurringAmount;
         totalContributions += inputsWithBoost.recurringAmount;
       }

@@ -1,3 +1,5 @@
+import { normalizeTimeModel } from "../timeModel";
+
 export interface OneTimeBoost {
   year: number;
   amount: number;
@@ -7,15 +9,15 @@ export interface OneTimeBoost {
 export interface Inputs {
   initialDeposit: number;
   recurringAmount: number;
-  contributeYears: number;
-  projectYears: number;
   interestRate: number;
-  currentAge: number;
+  startingAge: number;
+  contributionEndAge: number;
   boosts: OneTimeBoost[];
 }
 
 export interface YearRecord {
   year: number;
+  age: number;
   balance: number;
   totalContributions: number;
   totalInterest: number;
@@ -27,40 +29,45 @@ export interface ProjectionResult {
   totalInterest: number;
   yearly: YearRecord[];
   milestones: YearRecord[];
+  startingAge: number;
+  contributionEndAge: number;
+  projectionEndAge: number;
+  contributionYears: number;
+  totalYears: number;
 }
 
 export function calculateProjection(inputs: Inputs): ProjectionResult {
-  const {
-    initialDeposit,
-    recurringAmount,
-    contributeYears,
-    projectYears,
-    interestRate,
-    boosts,
-    currentAge: _currentAge
-  } = inputs;
+  const { initialDeposit, recurringAmount, interestRate, boosts } = inputs;
+  const time = normalizeTimeModel(inputs.startingAge, inputs.contributionEndAge);
+  const { startingAge, contributionYears, totalYears } = time;
+
+  const totalMonths = totalYears * 12;
+  const contributionMonths = Math.max(contributionYears, 0) * 12;
 
   const sanitizedBoosts = boosts
-    .filter((b) => b.amount > 0 && b.year >= 1 && b.year <= projectYears)
+    .filter((b) => b.amount > 0 && b.year >= 1 && b.year <= totalYears)
     .slice(0, 5);
 
-  const yearly: YearRecord[] = [{
-    year: 0,
-    balance: initialDeposit,
-    totalContributions: initialDeposit,
-    totalInterest: 0
-  }];
+  const yearly: YearRecord[] = [
+    {
+      year: 0,
+      age: startingAge,
+      balance: initialDeposit,
+      totalContributions: initialDeposit,
+      totalInterest: 0
+    }
+  ];
 
   let balance = initialDeposit;
   let totalContributions = initialDeposit;
 
   const monthlyFactor = Math.pow(1 + interestRate / 100, 1 / 12);
 
-  for (let month = 1; month <= projectYears * 12; month++) {
+  for (let month = 1; month <= totalMonths; month++) {
     const currentYear = Math.ceil(month / 12);
     const isFirstMonthOfYear = month % 12 === 1;
 
-    if (currentYear <= contributeYears) {
+    if (month <= contributionMonths) {
       balance += recurringAmount;
       totalContributions += recurringAmount;
     }
@@ -78,6 +85,7 @@ export function calculateProjection(inputs: Inputs): ProjectionResult {
       const year = month / 12;
       yearly.push({
         year,
+        age: startingAge + year,
         balance,
         totalContributions,
         totalInterest: balance - totalContributions
@@ -92,6 +100,7 @@ export function calculateProjection(inputs: Inputs): ProjectionResult {
     totalContributions,
     totalInterest: balance - totalContributions,
     yearly,
-    milestones
+    milestones,
+    ...time
   };
 }

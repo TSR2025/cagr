@@ -12,22 +12,18 @@ import { ExpandToggle } from "./ExpandToggle";
 
 interface ResultsPanelProps {
   data: ProjectionResult;
-  currentAge: number;
   isTimeCalibrated: boolean;
-  hasShownTimeInsight: boolean;
-  insightTrigger: number;
-  onInsightComplete: () => void;
   timePulseSignal: number;
+  onStartingAgeChange: (age: number) => void;
+  onContributionEndAgeChange: (age: number) => void;
 }
 
 export function ResultsPanel({
   data,
-  currentAge,
   isTimeCalibrated,
-  hasShownTimeInsight,
-  insightTrigger,
-  onInsightComplete,
-  timePulseSignal
+  timePulseSignal,
+  onStartingAgeChange,
+  onContributionEndAgeChange
 }: ResultsPanelProps) {
   const [expanded, setExpanded] = useState(false);
 
@@ -42,14 +38,15 @@ export function ResultsPanel({
       </div>
 
       <SummaryStats data={data} />
-      <ChartGate
-        isLocked={!isTimeCalibrated}
-        insightTrigger={hasShownTimeInsight ? 0 : insightTrigger}
-        onInsightComplete={onInsightComplete}
-      >
-        <GrowthChart data={data} currentAge={currentAge} timePulseSignal={timePulseSignal} />
+      <ChartGate isLocked={!isTimeCalibrated}>
+        <GrowthChart
+          data={data}
+          timePulseSignal={timePulseSignal}
+          onStartingAgeChange={onStartingAgeChange}
+          onContributionEndAgeChange={onContributionEndAgeChange}
+        />
       </ChartGate>
-      <MilestoneTable data={data} currentAge={currentAge} />
+      <MilestoneTable data={data} />
 
       <div className="space-y-3">
         <ExpandToggle expanded={expanded} onToggle={() => setExpanded((p) => !p)} />
