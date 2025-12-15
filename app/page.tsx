@@ -1,22 +1,18 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  calculateProjection,
-  Inputs
-} from "@/lib/calculations/calculateProjection";
+import { calculateProjection, Inputs } from "@/lib/calculations/calculateProjection";
 import { InputsPanel } from "@/components/inputs/InputsPanel";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
-import { DEFAULT_CURRENT_AGE } from "@/lib/utils/sanitizeAge";
+import { normalizeTimeState } from "@/lib/utils/timeModel";
 
 const defaultInputs: Inputs = {
   initialDeposit: 10000,
   recurringAmount: 750,
-  contributeYears: 20,
-  projectYears: 30,
   interestRate: 7,
-  currentAge: DEFAULT_CURRENT_AGE,
-  boosts: []
+  boosts: [],
+  startingAge: 30,
+  contributionEndAge: 60
 };
 
 const TIME_CALIBRATION_KEY = "horizon_time_calibrated";
@@ -29,7 +25,20 @@ export default function HomePage() {
   const [insightTrigger, setInsightTrigger] = useState(0);
   const [timePulseSignal, setTimePulseSignal] = useState(0);
 
-  const projection = useMemo(() => calculateProjection(inputs), [inputs]);
+  const normalizedTime = useMemo(
+    () => normalizeTimeState(inputs.startingAge, inputs.contributionEndAge),
+    [inputs.startingAge, inputs.contributionEndAge]
+  );
+
+  const projection = useMemo(
+    () =>
+      calculateProjection({
+        ...inputs,
+        startingAge: normalizedTime.startingAge,
+        contributionEndAge: normalizedTime.contributionEndAge
+      }),
+    [inputs, normalizedTime.contributionEndAge, normalizedTime.startingAge]
+  );
 
   useEffect(() => {
     try {
@@ -79,21 +88,55 @@ export default function HomePage() {
     });
   }, [hasShownTimeInsight, markTimeCalibrated]);
 
+  const updateStartingAge = useCallback(
+    (value: number) => {
+      setInputs((prev) => {
+        const next = normalizeTimeState(value, prev.contributionEndAge);
+        return {
+          ...prev,
+          startingAge: next.startingAge,
+          contributionEndAge: next.contributionEndAge
+        };
+      });
+      handleTimeInteraction();
+    },
+    [handleTimeInteraction]
+  );
+
+  const updateContributionEndAge = useCallback(
+    (value: number) => {
+      setInputs((prev) => {
+        const next = normalizeTimeState(prev.startingAge, value);
+        return {
+          ...prev,
+          startingAge: next.startingAge,
+          contributionEndAge: next.contributionEndAge
+        };
+      });
+      handleTimeInteraction();
+    },
+    [handleTimeInteraction]
+  );
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 lg:py-12">
       <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
         <div className="order-2 lg:order-1">
-          <InputsPanel inputs={inputs} onChange={setInputs} onTimeCalibrated={handleTimeInteraction} />
+          <InputsPanel inputs={inputs} onChange={setInputs} />
         </div>
         <div className="order-1 lg:order-2">
           <ResultsPanel
             data={projection}
-            currentAge={inputs.currentAge}
+            startingAge={normalizedTime.startingAge}
+            contributionEndAge={normalizedTime.contributionEndAge}
+            projectionEndAge={normalizedTime.projectionEndAge}
             isTimeCalibrated={isTimeCalibrated}
             hasShownTimeInsight={hasShownTimeInsight}
             insightTrigger={insightTrigger}
             onInsightComplete={markInsightShown}
             timePulseSignal={timePulseSignal}
+            onStartingAgeChange={updateStartingAge}
+            onContributionEndAgeChange={updateContributionEndAge}
           />
         </div>
       </div>
