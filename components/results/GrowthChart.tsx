@@ -35,20 +35,10 @@ export function GrowthChart({ data, currentAge, timePulseSignal }: GrowthChartPr
       <div className="space-y-3">
         <div className="space-y-1.5">
           <h3 className="text-lg font-semibold text-slate-900">Balance over time</h3>
-          <p className="text-sm text-slate-500">Contributions vs Growth</p>
-        </div>
-        <div className="flex items-center gap-3 text-xs font-medium text-slate-600">
-          <div className="flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-1 text-slate-600">
-            <span className="h-2 w-2 rounded-full bg-sky-500" aria-hidden />
-            <span>Contributions</span>
-          </div>
-          <div className="flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-1 text-slate-600">
-            <span className="h-2 w-2 rounded-full bg-amber-400" aria-hidden />
-            <span>Growth</span>
-          </div>
+          <p className="text-sm text-slate-500">How much of your future balance comes from you vs time</p>
         </div>
       </div>
-      <div className="mt-4 h-[300px] w-full overflow-hidden">
+      <div className="relative mt-4 h-[300px] w-full overflow-hidden">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data.yearly} margin={{ left: 8, right: 8 }}>
             <defs>
@@ -111,6 +101,14 @@ export function GrowthChart({ data, currentAge, timePulseSignal }: GrowthChartPr
             />
           </AreaChart>
         </ResponsiveContainer>
+        <div className="pointer-events-none absolute inset-0">
+          <span className="absolute left-10 top-40 text-[11px] font-medium text-sky-600/80">
+            Contributions
+          </span>
+          <span className="absolute right-12 top-16 text-[11px] font-medium text-amber-600/80">
+            Growth
+          </span>
+        </div>
       </div>
 
       <style jsx>{`
