@@ -7,15 +7,14 @@ import {
 } from "@/lib/calculations/calculateProjection";
 import { InputsPanel } from "@/components/inputs/InputsPanel";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
-import { DEFAULT_CURRENT_AGE } from "@/lib/utils/sanitizeAge";
+import { normalizeTimeModel } from "@/lib/timeModel";
 
 const defaultInputs: Inputs = {
   initialDeposit: 10000,
   recurringAmount: 750,
-  contributeYears: 20,
-  projectYears: 30,
   interestRate: 7,
-  currentAge: DEFAULT_CURRENT_AGE,
+  startingAge: 30,
+  contributionEndAge: 60,
   boosts: []
 };
 
@@ -79,16 +78,33 @@ export default function HomePage() {
     });
   }, [hasShownTimeInsight, markTimeCalibrated]);
 
+  const handleStartingAgeChange = useCallback((nextAge: number) => {
+    handleTimeInteraction();
+    setInputs((prev) => {
+      const normalized = normalizeTimeModel(nextAge, prev.contributionEndAge);
+      return { ...prev, startingAge: normalized.startingAge, contributionEndAge: normalized.contributionEndAge };
+    });
+  }, [handleTimeInteraction]);
+
+  const handleContributionEndChange = useCallback((nextEndAge: number) => {
+    handleTimeInteraction();
+    setInputs((prev) => {
+      const normalized = normalizeTimeModel(prev.startingAge, nextEndAge);
+      return { ...prev, startingAge: normalized.startingAge, contributionEndAge: normalized.contributionEndAge };
+    });
+  }, [handleTimeInteraction]);
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 lg:py-12">
       <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
         <div className="order-2 lg:order-1">
-          <InputsPanel inputs={inputs} onChange={setInputs} onTimeCalibrated={handleTimeInteraction} />
+          <InputsPanel inputs={inputs} onChange={setInputs} />
         </div>
         <div className="order-1 lg:order-2">
           <ResultsPanel
             data={projection}
-            currentAge={inputs.currentAge}
+            onStartingAgeChange={handleStartingAgeChange}
+            onContributionEndAgeChange={handleContributionEndChange}
             isTimeCalibrated={isTimeCalibrated}
             hasShownTimeInsight={hasShownTimeInsight}
             insightTrigger={insightTrigger}

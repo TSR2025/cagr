@@ -18,10 +18,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface MilestoneTableProps {
   data: ProjectionResult;
-  currentAge: number;
 }
 
-export function MilestoneTable({ data, currentAge }: MilestoneTableProps) {
+export function MilestoneTable({ data }: MilestoneTableProps) {
   return (
     <Card className="border-slate-200 bg-white/90">
       <CardHeader className="px-6 pt-5 pb-0">
@@ -41,7 +40,7 @@ export function MilestoneTable({ data, currentAge }: MilestoneTableProps) {
             <XAxis
               dataKey="year"
               ticks={data.milestones.map((m) => m.year)}
-              tickFormatter={(year) => `Age ${currentAge + Number(year)}`}
+              tickFormatter={(year) => `Age ${data.startingAge + Number(year)}`}
               tick={{ fill: "#475569", fontSize: 12 }}
               axisLine={false}
               tickLine={false}
@@ -59,7 +58,7 @@ export function MilestoneTable({ data, currentAge }: MilestoneTableProps) {
                 const record = payload[0].payload;
                 return (
                   <div className="rounded-lg bg-slate-900/90 px-4 py-3 text-sm text-white shadow-lg">
-                    <p className="font-semibold">Year {label} · Age {currentAge + Number(label)}</p>
+                    <p className="font-semibold">Year {label} · Age {data.startingAge + Number(label)}</p>
                     <p className="text-slate-200">Balance: {formatCurrency(record.balance)}</p>
                     <p className="text-slate-200">Contributions: {formatCurrency(record.totalContributions)}</p>
                     <p className="text-slate-200">Interest: {formatCurrency(record.totalInterest)}</p>
