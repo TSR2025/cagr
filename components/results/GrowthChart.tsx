@@ -45,35 +45,36 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
 
   return (
     <div className={clsx("chart-shell w-full rounded-2xl border border-slate-200 bg-white/90 p-5", isPulsing && "time-axis-pulse")}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <h3 className="text-lg font-semibold text-slate-900">Balance over time</h3>
-          <div className="flex items-center gap-2 text-[12px] font-medium text-slate-600 sm:ml-1">
-            <div className="flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-1 text-slate-600">
-              <span className="h-2 w-2 rounded-full bg-sky-500" aria-hidden />
-              <span>Contributions</span>
-            </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-1 text-slate-600">
-              <span className="h-2 w-2 rounded-full bg-amber-400" aria-hidden />
-              <span>Growth</span>
-            </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <h3 className="text-lg font-semibold text-slate-900">Balance over time</h3>
+        <div className="flex items-center gap-2 text-[12px] font-medium text-slate-600 sm:ml-1">
+          <div className="flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-1 text-slate-600">
+            <span className="h-2 w-2 rounded-full bg-sky-500" aria-hidden />
+            <span>Contributions</span>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-1 text-slate-600">
+            <span className="h-2 w-2 rounded-full bg-amber-400" aria-hidden />
+            <span>Growth</span>
           </div>
         </div>
-
-        <TimeControls
-          startingAge={data.startingAge}
-          onStartingAgeChange={onStartingAgeChange}
-          stopContributingAge={data.contributionEndAge}
-          onStopContributingAgeChange={onContributionEndAgeChange}
-          minAge={MIN_AGE}
-          maxAge={data.projectionEndAge}
-          minWindowYears={MIN_CONTRIB_WINDOW_YEARS}
-          snapIncrementYears={SNAP_INCREMENT_YEARS}
-          className="w-full sm:w-auto"
-        />
       </div>
-      <div className="mt-3 space-y-2">
-        <div className="plot-area h-[320px] w-full overflow-hidden sm:h-[360px]">
+      <div className="mt-4 space-y-3">
+        <div className="plot-area relative h-[340px] w-full overflow-hidden sm:h-[380px]">
+          <div className="pointer-events-none absolute left-1/2 top-3 z-10 w-[calc(100%-24px)] max-w-md -translate-x-1/2 sm:left-3 sm:w-auto sm:max-w-[280px] sm:translate-x-0">
+            <div className="pointer-events-auto rounded-xl border border-slate-200/80 bg-white/85 p-2 shadow-md shadow-slate-900/5 backdrop-blur-sm">
+              <TimeControls
+                startingAge={data.startingAge}
+                onStartingAgeChange={onStartingAgeChange}
+                stopContributingAge={data.contributionEndAge}
+                onStopContributingAgeChange={onContributionEndAgeChange}
+                minAge={MIN_AGE}
+                maxAge={data.projectionEndAge}
+                minWindowYears={MIN_CONTRIB_WINDOW_YEARS}
+                snapIncrementYears={SNAP_INCREMENT_YEARS}
+                className="w-full"
+              />
+            </div>
+          </div>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data.yearly} margin={{ top: 12, left: 8, right: 8, bottom: 24 }}>
               <defs>
@@ -145,8 +146,8 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        <p className="explain-row mt-2 text-sm leading-relaxed text-slate-600">
-          Start at {data.startingAge}. Contribute until {data.contributionEndAge}. Then let it compound.
+        <p className="explain-row text-sm leading-relaxed text-slate-600">
+          Start {data.startingAge} → Stop {data.contributionEndAge} → Compound to {data.projectionEndAge}.
         </p>
       </div>
 
