@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ProjectionResult } from "@/lib/calculations/calculateProjection";
+import { ChartGate } from "../ChartGate";
 import { ExportButton } from "./ExportButton";
 import { SummaryStats } from "./SummaryStats";
 import { GrowthChart } from "./GrowthChart";
@@ -12,9 +13,10 @@ import { ExpandToggle } from "./ExpandToggle";
 interface ResultsPanelProps {
   data: ProjectionResult;
   currentAge: number;
+  isTimeCalibrated: boolean;
 }
 
-export function ResultsPanel({ data, currentAge }: ResultsPanelProps) {
+export function ResultsPanel({ data, currentAge, isTimeCalibrated }: ResultsPanelProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -28,7 +30,9 @@ export function ResultsPanel({ data, currentAge }: ResultsPanelProps) {
       </div>
 
       <SummaryStats data={data} />
-      <GrowthChart data={data} currentAge={currentAge} />
+      <ChartGate isLocked={!isTimeCalibrated}>
+        <GrowthChart data={data} currentAge={currentAge} />
+      </ChartGate>
       <MilestoneTable data={data} currentAge={currentAge} />
 
       <div className="space-y-3">
