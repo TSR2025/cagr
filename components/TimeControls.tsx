@@ -45,6 +45,7 @@ export function TimeControls({
   };
 
   const handleDurationSelect = (duration: number) => {
+    setSelectedDuration(duration);
     const targetEndAge = startingAge + duration;
     const snapped = normalizeContributionEndAge(startingAge, targetEndAge, maxAge);
     onStopContributingAgeChange(snapped);
@@ -53,16 +54,15 @@ export function TimeControls({
   const handleStartingBlur = () => commitStartingAge(Number(startingDraft));
 
   const contributionYears = stopContributingAge - startingAge;
-  const selectedDuration = DURATION_OPTIONS.includes(contributionYears)
-    ? contributionYears
-    : DEFAULT_DURATION;
+  const [selectedDuration, setSelectedDuration] = useState<number>(() =>
+    DURATION_OPTIONS.includes(contributionYears) ? contributionYears : DEFAULT_DURATION
+  );
 
   useEffect(() => {
-    if (!DURATION_OPTIONS.includes(contributionYears)) {
-      const snapped = normalizeContributionEndAge(startingAge, startingAge + DEFAULT_DURATION, maxAge);
-      onStopContributingAgeChange(snapped);
+    if (DURATION_OPTIONS.includes(contributionYears)) {
+      setSelectedDuration(contributionYears);
     }
-  }, [contributionYears, maxAge, onStopContributingAgeChange, startingAge]);
+  }, [contributionYears]);
 
   return (
     <div className={clsx("flex min-w-[240px] flex-col gap-1.5 text-[13px] text-slate-900", className)}>
