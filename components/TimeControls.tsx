@@ -65,70 +65,75 @@ export function TimeControls({
   }, [contributionYears, maxAge, onStopContributingAgeChange, startingAge]);
 
   return (
-    <div className={clsx("flex min-w-[260px] flex-col gap-2 text-[13px] text-slate-900", className)}>
+    <div className={clsx("flex min-w-[240px] flex-col gap-1.5 text-[13px] text-slate-900", className)}>
       <p className="text-[12px] font-semibold text-slate-500">When you invest</p>
 
-      <div className="space-y-3 rounded-xl border border-slate-200/90 bg-white/80 p-3 shadow-subtle">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-[13px] font-medium text-slate-700">Start at age</p>
-          <div className="flex items-center justify-end gap-1.5">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Decrease starting age"
-              onClick={() => commitStartingAge(Number(startingDraft) - 1)}
-              className="h-8 w-8 rounded-md text-base"
-            >
-              −
-            </Button>
-            <Input
-              type="number"
-              inputMode="numeric"
-              min={minAge}
-              max={maxAge}
-              value={startingDraft}
-              onChange={(event) => setStartingDraft(event.target.value)}
-              onBlur={handleStartingBlur}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  handleStartingBlur();
-                }
-              }}
-              className="h-8 w-[88px] rounded-md px-2 text-center text-sm"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Increase starting age"
-              onClick={() => commitStartingAge(Number(startingDraft) + 1)}
-              className="h-8 w-8 rounded-md text-base"
-            >
-              +
-            </Button>
+      <div className="rounded-lg border border-slate-200/80 bg-white/70 p-2.5">
+        <div className="grid grid-cols-[120px_minmax(0,1fr)] items-start gap-3">
+          <div className="flex flex-col gap-1">
+            <p className="text-[12px] font-medium text-slate-700">Start age</p>
+            <div className="flex flex-col items-center gap-1 rounded-md border border-slate-200/80 bg-white px-1.5 py-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label="Increase starting age"
+                onClick={() => commitStartingAge(Number(startingDraft) + 1)}
+                className="h-7 w-8 rounded-md text-[15px]"
+              >
+                ▲
+              </Button>
+              <Input
+                type="number"
+                inputMode="numeric"
+                min={minAge}
+                max={maxAge}
+                value={startingDraft}
+                onChange={(event) => setStartingDraft(event.target.value)}
+                onBlur={handleStartingBlur}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    handleStartingBlur();
+                  }
+                }}
+                className="h-9 w-[72px] rounded-md px-2 text-center text-sm"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                aria-label="Decrease starting age"
+                onClick={() => commitStartingAge(Number(startingDraft) - 1)}
+                className="h-7 w-8 rounded-md text-[15px]"
+              >
+                ▼
+              </Button>
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-2">
-          <p className="text-[13px] font-medium text-slate-700">Contribute for</p>
-          <div className="grid grid-cols-2 gap-2">
-            {DURATION_OPTIONS.map((duration) => {
-              const isSelected = duration === selectedDuration;
-              return (
-                <Button
-                  key={duration}
-                  type="button"
-                  variant={isSelected ? "secondary" : "outline"}
-                  aria-pressed={isSelected}
-                  onClick={() => handleDurationSelect(duration)}
-                  className="h-10 w-full justify-center text-sm"
-                >
-                  {duration} years
-                </Button>
-              );
-            })}
+          <div className="flex flex-col gap-1">
+            <p className="text-[12px] font-medium text-slate-700">Contribute for</p>
+            <div className="flex items-start gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
+                {DURATION_OPTIONS.map((duration) => {
+                  const isSelected = duration === selectedDuration;
+                  return (
+                    <Button
+                      key={duration}
+                      type="button"
+                      variant={isSelected ? "secondary" : "outline"}
+                      aria-pressed={isSelected}
+                      onClick={() => handleDurationSelect(duration)}
+                      className="h-9 w-16 justify-center text-sm"
+                    >
+                      {duration}
+                    </Button>
+                  );
+                })}
+              </div>
+              <span className="mt-1 text-[12px] font-medium text-slate-600">years</span>
+            </div>
           </div>
         </div>
       </div>
