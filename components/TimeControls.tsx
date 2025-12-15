@@ -56,89 +56,93 @@ export function TimeControls({
   const handleStopBlur = () => commitStopAge(Number(stopDraft));
 
   return (
-    <div className={clsx("w-full min-w-[240px] max-w-[320px] rounded-xl border border-slate-200 bg-white/80 p-3 shadow-subtle", className)}>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Time</p>
-      <div className="mt-2 space-y-3 text-sm text-slate-900">
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-slate-600">Starting age</p>
-          <div className="flex items-center gap-1.5">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Decrease starting age"
-              onClick={() => commitStartingAge(Number(startingDraft) - 1)}
-            >
-              −
-            </Button>
-            <Input
-              type="number"
-              inputMode="numeric"
-              min={minAge}
-              max={maxAge}
-              value={startingDraft}
-              onChange={(event) => setStartingDraft(event.target.value)}
-              onBlur={handleStartingBlur}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  handleStartingBlur();
-                }
-              }}
-              className="w-[96px] text-center"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Increase starting age"
-              onClick={() => commitStartingAge(Number(startingDraft) + 1)}
-            >
-              +
-            </Button>
-          </div>
-        </div>
+    <div
+      className={clsx(
+        "inline-grid min-w-[220px] grid-cols-[auto,1fr] items-center gap-x-3 gap-y-2 rounded-lg border border-slate-200/90 bg-white/75 p-2 text-[13px] text-slate-900",
+        className
+      )}
+    >
+      <p className="col-span-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Time</p>
 
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-slate-600">Stop contributing at age</p>
-          <div className="flex items-center gap-1.5">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Decrease stop contributing age"
-              onClick={() => commitStopAge(Number(stopDraft) - 1)}
-            >
-              −
-            </Button>
-            <Input
-              type="number"
-              inputMode="numeric"
-              min={minAge + minWindowYears}
-              max={maxAge}
-              step={snapIncrementYears}
-              value={stopDraft}
-              onChange={(event) => setStopDraft(event.target.value)}
-              onBlur={handleStopBlur}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  handleStopBlur();
-                }
-              }}
-              className="w-[96px] text-center"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label="Increase stop contributing age"
-              onClick={() => commitStopAge(Number(stopDraft) + 1)}
-            >
-              +
-            </Button>
-          </div>
-        </div>
+      <p className="text-[12px] font-medium text-slate-700">Starting age</p>
+      <div className="flex items-center justify-end gap-1.5">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label="Decrease starting age"
+          onClick={() => commitStartingAge(Number(startingDraft) - 1)}
+          className="h-8 w-8 rounded-md text-base"
+        >
+          −
+        </Button>
+        <Input
+          type="number"
+          inputMode="numeric"
+          min={minAge}
+          max={maxAge}
+          value={startingDraft}
+          onChange={(event) => setStartingDraft(event.target.value)}
+          onBlur={handleStartingBlur}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              handleStartingBlur();
+            }
+          }}
+          className="h-8 w-[88px] rounded-md px-2 text-center text-sm"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label="Increase starting age"
+          onClick={() => commitStartingAge(Number(startingDraft) + 1)}
+          className="h-8 w-8 rounded-md text-base"
+        >
+          +
+        </Button>
+      </div>
+
+      <p className="text-[12px] font-medium text-slate-700">Stop contributing at age</p>
+      <div className="flex items-center justify-end gap-1.5">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label="Decrease stop contributing age"
+          onClick={() => commitStopAge(Number(stopDraft) - snapIncrementYears)}
+          className="h-8 w-8 rounded-md text-base"
+        >
+          −
+        </Button>
+        <Input
+          type="number"
+          inputMode="numeric"
+          min={minAge + minWindowYears}
+          max={maxAge}
+          step={snapIncrementYears}
+          value={stopDraft}
+          onChange={(event) => setStopDraft(event.target.value)}
+          onBlur={handleStopBlur}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              handleStopBlur();
+            }
+          }}
+          className="h-8 w-[88px] rounded-md px-2 text-center text-sm"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label="Increase stop contributing age"
+          onClick={() => commitStopAge(Number(stopDraft) + snapIncrementYears)}
+          className="h-8 w-8 rounded-md text-base"
+        >
+          +
+        </Button>
       </div>
     </div>
   );
