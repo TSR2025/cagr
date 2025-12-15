@@ -9,25 +9,30 @@ import { GrowthChart } from "./GrowthChart";
 import { MilestoneTable } from "./MilestoneTable";
 import { FullBreakdownTable } from "./FullBreakdownTable";
 import { ExpandToggle } from "./ExpandToggle";
+import { deriveTimeState } from "@/lib/utils/timeModel";
 
 interface ResultsPanelProps {
   data: ProjectionResult;
-  currentAge: number;
   isTimeCalibrated: boolean;
   hasShownTimeInsight: boolean;
   insightTrigger: number;
   onInsightComplete: () => void;
   timePulseSignal: number;
+  onStartingAgeChange: (age: number) => void;
+  onContributionEndAgeChange: (age: number) => void;
+  time: ReturnType<typeof deriveTimeState>;
 }
 
 export function ResultsPanel({
   data,
-  currentAge,
   isTimeCalibrated,
   hasShownTimeInsight,
   insightTrigger,
   onInsightComplete,
-  timePulseSignal
+  timePulseSignal,
+  onStartingAgeChange,
+  onContributionEndAgeChange,
+  time
 }: ResultsPanelProps) {
   const [expanded, setExpanded] = useState(false);
 
@@ -47,9 +52,15 @@ export function ResultsPanel({
         insightTrigger={hasShownTimeInsight ? 0 : insightTrigger}
         onInsightComplete={onInsightComplete}
       >
-        <GrowthChart data={data} currentAge={currentAge} timePulseSignal={timePulseSignal} />
+        <GrowthChart
+          data={data}
+          timePulseSignal={timePulseSignal}
+          onStartingAgeChange={onStartingAgeChange}
+          onContributionEndAgeChange={onContributionEndAgeChange}
+          time={time}
+        />
       </ChartGate>
-      <MilestoneTable data={data} currentAge={currentAge} />
+      <MilestoneTable data={data} startingAge={time.startingAge} />
 
       <div className="space-y-3">
         <ExpandToggle expanded={expanded} onToggle={() => setExpanded((p) => !p)} />

@@ -1,3 +1,5 @@
+import { deriveTimeState } from "../utils/timeModel";
+
 export interface OneTimeBoost {
   year: number;
   amount: number;
@@ -7,10 +9,9 @@ export interface OneTimeBoost {
 export interface Inputs {
   initialDeposit: number;
   recurringAmount: number;
-  contributeYears: number;
-  projectYears: number;
+  startingAge: number;
+  contributionEndAge: number;
   interestRate: number;
-  currentAge: number;
   boosts: OneTimeBoost[];
 }
 
@@ -27,21 +28,31 @@ export interface ProjectionResult {
   totalInterest: number;
   yearly: YearRecord[];
   milestones: YearRecord[];
+  time: {
+    startingAge: number;
+    contributionEndAge: number;
+    projectionEndAge: number;
+    contributionYears: number;
+    totalYears: number;
+  };
 }
 
 export function calculateProjection(inputs: Inputs): ProjectionResult {
   const {
     initialDeposit,
     recurringAmount,
-    contributeYears,
-    projectYears,
+    startingAge,
+    contributionEndAge,
     interestRate,
-    boosts,
-    currentAge: _currentAge
+    boosts
   } = inputs;
 
+  const time = deriveTimeState(startingAge, contributionEndAge);
+
+  const { contributionYears, totalYears } = time;
+
   const sanitizedBoosts = boosts
-    .filter((b) => b.amount > 0 && b.year >= 1 && b.year <= projectYears)
+    .filter((b) => b.amount > 0 && b.year >= 1 && b.year <= totalYears)
     .slice(0, 5);
 
   const yearly: YearRecord[] = [{
@@ -56,11 +67,11 @@ export function calculateProjection(inputs: Inputs): ProjectionResult {
 
   const monthlyFactor = Math.pow(1 + interestRate / 100, 1 / 12);
 
-  for (let month = 1; month <= projectYears * 12; month++) {
+  for (let month = 1; month <= totalYears * 12; month++) {
     const currentYear = Math.ceil(month / 12);
     const isFirstMonthOfYear = month % 12 === 1;
 
-    if (currentYear <= contributeYears) {
+    if (currentYear <= contributionYears) {
       balance += recurringAmount;
       totalContributions += recurringAmount;
     }
@@ -92,6 +103,7 @@ export function calculateProjection(inputs: Inputs): ProjectionResult {
     totalContributions,
     totalInterest: balance - totalContributions,
     yearly,
-    milestones
+    milestones,
+    time
   };
 }

@@ -7,15 +7,19 @@ import {
 } from "@/lib/calculations/calculateProjection";
 import { InputsPanel } from "@/components/inputs/InputsPanel";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
-import { DEFAULT_CURRENT_AGE } from "@/lib/utils/sanitizeAge";
+import {
+  clampContributionEndAge,
+  clampStartingAge,
+  DEFAULT_CONTRIBUTION_END_AGE,
+  DEFAULT_STARTING_AGE
+} from "@/lib/utils/timeModel";
 
 const defaultInputs: Inputs = {
   initialDeposit: 10000,
   recurringAmount: 750,
-  contributeYears: 20,
-  projectYears: 30,
+  startingAge: DEFAULT_STARTING_AGE,
+  contributionEndAge: DEFAULT_CONTRIBUTION_END_AGE,
   interestRate: 7,
-  currentAge: DEFAULT_CURRENT_AGE,
   boosts: []
 };
 
@@ -79,21 +83,43 @@ export default function HomePage() {
     });
   }, [hasShownTimeInsight, markTimeCalibrated]);
 
+  const handleStartingAgeChange = useCallback(
+    (nextAge: number) => {
+      setInputs((prev) => {
+        const clampedAge = clampStartingAge(nextAge);
+        const nextContributionEndAge = clampContributionEndAge(clampedAge, prev.contributionEndAge);
+        return { ...prev, startingAge: clampedAge, contributionEndAge: nextContributionEndAge };
+      });
+      handleTimeInteraction();
+    },
+    [handleTimeInteraction]
+  );
+
+  const handleContributionEndAgeChange = useCallback(
+    (nextAge: number) => {
+      setInputs((prev) => ({ ...prev, contributionEndAge: clampContributionEndAge(prev.startingAge, nextAge) }));
+      handleTimeInteraction();
+    },
+    [handleTimeInteraction]
+  );
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 lg:py-12">
       <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
         <div className="order-2 lg:order-1">
-          <InputsPanel inputs={inputs} onChange={setInputs} onTimeCalibrated={handleTimeInteraction} />
+          <InputsPanel inputs={inputs} onChange={setInputs} />
         </div>
         <div className="order-1 lg:order-2">
           <ResultsPanel
             data={projection}
-            currentAge={inputs.currentAge}
             isTimeCalibrated={isTimeCalibrated}
             hasShownTimeInsight={hasShownTimeInsight}
             insightTrigger={insightTrigger}
             onInsightComplete={markInsightShown}
             timePulseSignal={timePulseSignal}
+            onStartingAgeChange={handleStartingAgeChange}
+            onContributionEndAgeChange={handleContributionEndAgeChange}
+            time={projection.time}
           />
         </div>
       </div>

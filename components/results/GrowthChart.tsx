@@ -12,16 +12,30 @@ import {
 import { ProjectionResult } from "@/lib/calculations/calculateProjection";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  clampContributionEndAge,
+  clampStartingAge,
+  deriveTimeState,
+  MIN_CONTRIB_WINDOW_YEARS,
+  SNAP_INCREMENT_YEARS
+} from "@/lib/utils/timeModel";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 interface GrowthChartProps {
   data: ProjectionResult;
-  currentAge: number;
   timePulseSignal: number;
+  onStartingAgeChange: (age: number) => void;
+  onContributionEndAgeChange: (age: number) => void;
+  time: ReturnType<typeof deriveTimeState>;
 }
 
-export function GrowthChart({ data, currentAge, timePulseSignal }: GrowthChartProps) {
+export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onContributionEndAgeChange, time }: GrowthChartProps) {
   const [isPulsing, setIsPulsing] = useState(false);
+  const railRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startingAgeDraft, setStartingAgeDraft] = useState<string>(time.startingAge.toString());
 
   useEffect(() => {
     if (timePulseSignal === 0) return;
@@ -30,12 +44,134 @@ export function GrowthChart({ data, currentAge, timePulseSignal }: GrowthChartPr
     return () => window.clearTimeout(timeout);
   }, [timePulseSignal]);
 
+  useEffect(() => {
+    setStartingAgeDraft(time.startingAge.toString());
+  }, [time.startingAge]);
+
+  useEffect(() => {
+    const handlePointerUp = () => setIsDragging(false);
+    if (isDragging) {
+      window.addEventListener("pointerup", handlePointerUp);
+    }
+    return () => window.removeEventListener("pointerup", handlePointerUp);
+  }, [isDragging]);
+
+  const ticks = useMemo(() => {
+    const ages = [] as number[];
+    for (let age = time.startingAge; age <= time.projectionEndAge; age += SNAP_INCREMENT_YEARS) {
+      ages.push(age);
+    }
+    if (ages[ages.length - 1] !== time.projectionEndAge) {
+      ages.push(time.projectionEndAge);
+    }
+    return ages.map((age) => age - time.startingAge);
+  }, [time.projectionEndAge, time.startingAge]);
+
+  const ageLabels = useMemo(() => {
+    const ages = [] as number[];
+    for (let age = time.startingAge; age <= time.projectionEndAge; age += SNAP_INCREMENT_YEARS) {
+      ages.push(age);
+    }
+    if (ages[ages.length - 1] !== time.projectionEndAge) {
+      ages.push(time.projectionEndAge);
+    }
+    return ages;
+  }, [time.projectionEndAge, time.startingAge]);
+
+  const handleRailPointer = (clientX: number) => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const rect = rail.getBoundingClientRect();
+    const ratio = (clientX - rect.left) / rect.width;
+    const clampedRatio = Math.min(Math.max(ratio, 0), 1);
+    const age = time.startingAge + clampedRatio * time.totalYears;
+    const nextAge = clampContributionEndAge(time.startingAge, age);
+    onContributionEndAgeChange(nextAge);
+  };
+
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragging(true);
+    handleRailPointer(event.clientX);
+  };
+
+  const handlePointerMove = (event: PointerEvent) => {
+    if (!isDragging) return;
+    handleRailPointer(event.clientX);
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+    window.addEventListener("pointermove", handlePointerMove);
+    return () => window.removeEventListener("pointermove", handlePointerMove);
+  }, [isDragging]);
+
+  const handleStartingAgeCommit = () => {
+    const numeric = Number(startingAgeDraft);
+    const fallback = time.startingAge;
+    const next = Number.isFinite(numeric) ? clampStartingAge(numeric) : fallback;
+    setStartingAgeDraft(next.toString());
+    onStartingAgeChange(next);
+  };
+
+  const handleStartingAgeStep = (delta: number) => {
+    const next = clampStartingAge(time.startingAge + delta);
+    setStartingAgeDraft(next.toString());
+    onStartingAgeChange(next);
+  };
+
+  const handlePercent = time.totalYears
+    ? ((time.contributionEndAge - time.startingAge) / time.totalYears) * 100
+    : 0;
+
   return (
     <div className={clsx("chart-shell w-full rounded-2xl border border-slate-200 bg-white/90 p-6 pb-8", isPulsing && "time-axis-pulse")}>
       <div className="space-y-3">
-        <div className="space-y-1.5">
-          <h3 className="text-lg font-semibold text-slate-900">Balance over time</h3>
-          <p className="text-sm text-slate-500">Contributions vs Growth</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1.5">
+            <h3 className="text-lg font-semibold text-slate-900">Balance over time</h3>
+            <p className="text-sm text-slate-500">Contributions vs Growth</p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="Decrease starting age"
+              onClick={() => handleStartingAgeStep(-1)}
+            >
+              −
+            </Button>
+            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1">
+              <label htmlFor="starting-age" className="text-xs font-medium text-slate-600">
+                Starting age
+              </label>
+              <Input
+                id="starting-age"
+                className="h-9 w-20 text-center"
+                type="number"
+                inputMode="numeric"
+                value={startingAgeDraft}
+                onChange={(event) => setStartingAgeDraft(event.target.value)}
+                onBlur={handleStartingAgeCommit}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    handleStartingAgeCommit();
+                  }
+                }}
+              />
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              aria-label="Increase starting age"
+              onClick={() => handleStartingAgeStep(1)}
+            >
+              +
+            </Button>
+          </div>
         </div>
         <div className="flex items-center gap-3 text-xs font-medium text-slate-600">
           <div className="flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-1 text-slate-600">
@@ -64,8 +200,12 @@ export function GrowthChart({ data, currentAge, timePulseSignal }: GrowthChartPr
             <CartesianGrid stroke="#E2E8F0" strokeDasharray="3 3" />
             <XAxis
               dataKey="year"
-              ticks={[0, 5, 10, 15, 20, 25, 30]}
-              tickFormatter={(year) => `Age ${currentAge + Number(year)}`}
+              ticks={ticks}
+              tickFormatter={(year) => {
+                const age = time.startingAge + Number(year);
+                const isLastTick = age === time.projectionEndAge;
+                return `${age}${isLastTick ? "+" : ""}`;
+              }}
               tick={{ fill: "#475569", fontSize: 12 }}
               axisLine={false}
               tickLine={false}
@@ -83,7 +223,7 @@ export function GrowthChart({ data, currentAge, timePulseSignal }: GrowthChartPr
                 const record = payload[0].payload;
                 return (
                   <div className="rounded-lg bg-slate-900/90 px-4 py-3 text-sm text-white shadow-lg">
-                    <p className="font-semibold">Year {label} · Age {currentAge + Number(label)}</p>
+                    <p className="font-semibold">Year {label} · Age {time.startingAge + Number(label)}</p>
                     <p className="text-slate-200">Balance: {formatCurrency(record.balance)}</p>
                     <p className="text-slate-200">Contributions: {formatCurrency(record.totalContributions)}</p>
                     <p className="text-slate-200">Interest: {formatCurrency(record.totalInterest)}</p>
@@ -111,6 +251,50 @@ export function GrowthChart({ data, currentAge, timePulseSignal }: GrowthChartPr
             />
           </AreaChart>
         </ResponsiveContainer>
+      </div>
+
+      <div className="mt-6 space-y-2">
+        <div className="relative">
+          <div
+            ref={railRef}
+            className="relative h-2 w-full cursor-pointer rounded-full bg-slate-100"
+            onPointerDown={handlePointerDown}
+          >
+            {ageLabels.map((age) => {
+              const percent = time.totalYears ? ((age - time.startingAge) / time.totalYears) * 100 : 0;
+              const isLast = age === time.projectionEndAge;
+              return (
+                <div
+                  key={age}
+                  className="pointer-events-none absolute -top-5 -translate-x-1/2 text-[11px] font-medium text-slate-500"
+                  style={{ left: `${percent}%` }}
+                >
+                  {`${age}${isLast ? "+" : ""}`}
+                </div>
+              );
+            })}
+            <div
+              className="absolute -top-2 h-6 w-6 -translate-x-1/2 cursor-grab active:cursor-grabbing"
+              style={{ left: `${handlePercent}%` }}
+              onPointerDown={handlePointerDown}
+              aria-label="Adjust contribution end age"
+              role="slider"
+              aria-valuemin={time.startingAge + MIN_CONTRIB_WINDOW_YEARS}
+              aria-valuemax={time.projectionEndAge}
+              aria-valuenow={time.contributionEndAge}
+            >
+              <div className="relative h-6 w-6 rounded-full border-2 border-slate-900 bg-white shadow-lg">
+                <div className="pointer-events-none absolute left-1/2 top-full mt-1 -translate-x-1/2 whitespace-nowrap text-[11px] font-semibold text-slate-800">
+                  Contributions end
+                </div>
+              </div>
+            </div>
+            <div className="pointer-events-none absolute right-0 top-4 text-xs text-slate-400">▶</div>
+          </div>
+        </div>
+        <p className="text-xs text-slate-600">
+          Starting at {time.startingAge}, you contribute until {time.contributionEndAge}, then let it grow.
+        </p>
       </div>
 
       <style jsx>{`
