@@ -2,6 +2,10 @@
 const nextConfig = {
   experimental: {
     reactCompiler: false
+  },
+  output: "export",
+  images: {
+    unoptimized: true
   }
 };
 
