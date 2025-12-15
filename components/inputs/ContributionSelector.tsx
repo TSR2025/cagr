@@ -28,7 +28,8 @@ export function ContributionSelector({ value, onChange, label = "Contribution Am
     onChange(amount);
   };
 
-  const tileBaseClasses = "flex h-20 items-center justify-center rounded-xl border transition-all duration-150 shadow-subtle bg-slate-50";
+  const tileBaseClasses =
+    "flex h-20 items-center justify-center rounded-xl border border-slate-200 bg-white transition-all duration-150 shadow-subtle";
   const tileHoverClasses = "hover:border-slate-300 hover:shadow-md";
 
   return (
@@ -74,7 +75,7 @@ export function ContributionSelector({ value, onChange, label = "Contribution Am
                   tileBaseClasses,
                   tileHoverClasses,
                   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-300",
-                  isSelected && "border-slate-500 bg-white shadow-md"
+                  isSelected && "border-slate-900 bg-slate-900 text-white shadow-md"
                 )}
                 style={{
                   transform: `scale(${scale})`,
@@ -92,7 +93,9 @@ export function ContributionSelector({ value, onChange, label = "Contribution Am
                   }
                 }}
               >
-                <span className="text-lg font-semibold text-slate-800">${amount.toLocaleString()}</span>
+                <span className={clsx("text-lg font-semibold", isSelected ? "text-white" : "text-slate-800")}>${
+                  amount.toLocaleString()
+                }</span>
               </button>
             );
           })}
@@ -127,12 +130,12 @@ export function ContributionSelector({ value, onChange, label = "Contribution Am
                   type="button"
                   role="radio"
                   aria-checked={isSelected}
-                  className={clsx(
-                    tileBaseClasses,
-                    tileHoverClasses,
-                    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-300",
-                    isSelected && "border-slate-500 bg-white shadow-md"
-                  )}
+                className={clsx(
+                  tileBaseClasses,
+                  tileHoverClasses,
+                  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-300",
+                  isSelected && "border-slate-900 bg-slate-900 text-white shadow-md"
+                )}
                   style={{
                     transform: `scale(${scale})`,
                     transitionTimingFunction: EASING,
@@ -149,9 +152,11 @@ export function ContributionSelector({ value, onChange, label = "Contribution Am
                     }
                   }}
                 >
-                  <span className="text-lg font-semibold text-slate-800">${amount.toLocaleString()}</span>
-                </button>
-              );
+                <span className={clsx("text-lg font-semibold", isSelected ? "text-white" : "text-slate-800")}>${
+                  amount.toLocaleString()
+                }</span>
+              </button>
+            );
             })}
           </div>
         </div>
