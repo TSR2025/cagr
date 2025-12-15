@@ -13,9 +13,6 @@ import { ExpandToggle } from "./ExpandToggle";
 interface ResultsPanelProps {
   data: ProjectionResult;
   isTimeCalibrated: boolean;
-  hasShownTimeInsight: boolean;
-  insightTrigger: number;
-  onInsightComplete: () => void;
   timePulseSignal: number;
   onStartingAgeChange: (age: number) => void;
   onContributionEndAgeChange: (age: number) => void;
@@ -24,9 +21,6 @@ interface ResultsPanelProps {
 export function ResultsPanel({
   data,
   isTimeCalibrated,
-  hasShownTimeInsight,
-  insightTrigger,
-  onInsightComplete,
   timePulseSignal,
   onStartingAgeChange,
   onContributionEndAgeChange
@@ -44,11 +38,7 @@ export function ResultsPanel({
       </div>
 
       <SummaryStats data={data} />
-      <ChartGate
-        isLocked={!isTimeCalibrated}
-        insightTrigger={hasShownTimeInsight ? 0 : insightTrigger}
-        onInsightComplete={onInsightComplete}
-      >
+      <ChartGate isLocked={!isTimeCalibrated}>
         <GrowthChart
           data={data}
           timePulseSignal={timePulseSignal}
