@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ProjectionResult } from "@/lib/calculations/calculateProjection";
+import { ChartGate } from "../ChartGate";
 import { ExportButton } from "./ExportButton";
 import { SummaryStats } from "./SummaryStats";
 import { GrowthChart } from "./GrowthChart";
@@ -12,9 +13,22 @@ import { ExpandToggle } from "./ExpandToggle";
 interface ResultsPanelProps {
   data: ProjectionResult;
   currentAge: number;
+  isTimeCalibrated: boolean;
+  hasShownTimeInsight: boolean;
+  insightTrigger: number;
+  onInsightComplete: () => void;
+  timePulseSignal: number;
 }
 
-export function ResultsPanel({ data, currentAge }: ResultsPanelProps) {
+export function ResultsPanel({
+  data,
+  currentAge,
+  isTimeCalibrated,
+  hasShownTimeInsight,
+  insightTrigger,
+  onInsightComplete,
+  timePulseSignal
+}: ResultsPanelProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -28,7 +42,13 @@ export function ResultsPanel({ data, currentAge }: ResultsPanelProps) {
       </div>
 
       <SummaryStats data={data} />
-      <GrowthChart data={data} currentAge={currentAge} />
+      <ChartGate
+        isLocked={!isTimeCalibrated}
+        insightTrigger={hasShownTimeInsight ? 0 : insightTrigger}
+        onInsightComplete={onInsightComplete}
+      >
+        <GrowthChart data={data} currentAge={currentAge} timePulseSignal={timePulseSignal} />
+      </ChartGate>
       <MilestoneTable data={data} currentAge={currentAge} />
 
       <div className="space-y-3">

@@ -35,9 +35,10 @@ const findNearestPresetIndex = (value: number) => {
 interface InputsPanelProps {
   inputs: Inputs;
   onChange: (inputs: Inputs) => void;
+  onTimeCalibrated?: () => void;
 }
 
-export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
+export function InputsPanel({ inputs, onChange, onTimeCalibrated }: InputsPanelProps) {
   const [draft, setDraft] = useState<Inputs>(inputs);
 
   useEffect(() => {
@@ -58,6 +59,10 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
     draft.contributeYears,
     draft.projectYears
   );
+
+  const handleTimeInteraction = () => {
+    onTimeCalibrated?.();
+  };
 
   return (
     <Card className="sticky top-6 h-fit w-full max-w-[420px] border-slate-200 bg-white/90 shadow-subtle">
@@ -107,6 +112,7 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
                   size="icon"
                   aria-label="Decrease current age"
                   onClick={() => {
+                    handleTimeInteraction();
                     const nextAge = sanitizeAge(draft.currentAge - 1, draft.currentAge);
                     updateField("currentAge", nextAge);
                   }}
@@ -121,9 +127,11 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
                   step={1}
                   value={draft.currentAge}
                   onChange={(event) => {
+                    handleTimeInteraction();
                     const nextAge = sanitizeAge(event.target.value, DEFAULT_CURRENT_AGE);
                     updateField("currentAge", nextAge);
                   }}
+                  onBlur={handleTimeInteraction}
                   className="w-20 text-center"
                 />
                 <Button
@@ -132,6 +140,7 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
                   size="icon"
                   aria-label="Increase current age"
                   onClick={() => {
+                    handleTimeInteraction();
                     const nextAge = sanitizeAge(draft.currentAge + 1, draft.currentAge);
                     updateField("currentAge", nextAge);
                   }}
@@ -176,7 +185,10 @@ export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
                       variant={isSelected ? "secondary" : "outline"}
                       className="flex-1"
                       aria-pressed={isSelected}
-                      onClick={() => updateField("projectYears", option)}
+                      onClick={() => {
+                        handleTimeInteraction();
+                        updateField("projectYears", option);
+                      }}
                     >
                       {option}
                     </Button>
