@@ -59,21 +59,24 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
             </div>
           </div>
         </div>
-
-        <TimeControls
-          startingAge={data.startingAge}
-          onStartingAgeChange={onStartingAgeChange}
-          stopContributingAge={data.contributionEndAge}
-          onStopContributingAgeChange={onContributionEndAgeChange}
-          minAge={MIN_AGE}
-          maxAge={data.projectionEndAge}
-          minWindowYears={MIN_CONTRIB_WINDOW_YEARS}
-          snapIncrementYears={SNAP_INCREMENT_YEARS}
-          className="w-full sm:w-auto"
-        />
       </div>
-      <div className="mt-3 space-y-2">
-        <div className="plot-area h-[320px] w-full overflow-hidden sm:h-[360px]">
+      <div className="mt-3 space-y-3">
+        <div className="plot-area relative h-[340px] w-full overflow-hidden sm:h-[380px]">
+          <div className="pointer-events-auto absolute inset-x-3 top-3 z-10 mx-auto max-w-[320px] sm:left-3 sm:right-auto sm:mx-0 sm:max-w-[280px]">
+            <div className="rounded-xl border border-slate-200/80 bg-white/85 p-2 shadow-md backdrop-blur-sm">
+              <TimeControls
+                startingAge={data.startingAge}
+                onStartingAgeChange={onStartingAgeChange}
+                stopContributingAge={data.contributionEndAge}
+                onStopContributingAgeChange={onContributionEndAgeChange}
+                minAge={MIN_AGE}
+                maxAge={data.projectionEndAge}
+                minWindowYears={MIN_CONTRIB_WINDOW_YEARS}
+                snapIncrementYears={SNAP_INCREMENT_YEARS}
+                className="w-full"
+              />
+            </div>
+          </div>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data.yearly} margin={{ top: 12, left: 8, right: 8, bottom: 24 }}>
               <defs>
@@ -145,8 +148,8 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        <p className="explain-row mt-2 text-sm leading-relaxed text-slate-600">
-          Start at {data.startingAge}. Contribute until {data.contributionEndAge}. Then let it compound.
+        <p className="explain-row text-sm leading-relaxed text-slate-600">
+          Start {data.startingAge} → Stop {data.contributionEndAge} → Compound to {data.projectionEndAge}.
         </p>
       </div>
 
