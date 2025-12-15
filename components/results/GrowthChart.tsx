@@ -44,14 +44,11 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
   const stopYear = data.contributionEndAge - data.startingAge;
 
   return (
-    <div className={clsx("chart-shell w-full rounded-2xl border border-slate-200 bg-white/90 p-6 pb-8", isPulsing && "time-axis-pulse")}>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <h3 className="text-lg font-semibold text-slate-900">Balance over time</h3>
-            <p className="text-sm text-slate-500">Contributions vs Growth</p>
-          </div>
-          <div className="flex items-center gap-3 text-xs font-medium text-slate-600">
+    <div className={clsx("chart-shell w-full rounded-2xl border border-slate-200 bg-white/90 p-5", isPulsing && "time-axis-pulse")}>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <h3 className="text-lg font-semibold text-slate-900">Balance over time</h3>
+          <div className="flex items-center gap-2 text-[12px] font-medium text-slate-600 sm:ml-1">
             <div className="flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-1 text-slate-600">
               <span className="h-2 w-2 rounded-full bg-sky-500" aria-hidden />
               <span>Contributions</span>
@@ -75,10 +72,10 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
           className="w-full sm:w-auto"
         />
       </div>
-      <div className="mt-4 space-y-3">
-        <div className="plot-area h-[300px] w-full overflow-hidden pb-10">
+      <div className="mt-3 space-y-2">
+        <div className="plot-area min-h-[320px] w-full overflow-hidden">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data.yearly} margin={{ top: 12, left: 8, right: 8, bottom: 32 }}>
+            <AreaChart data={data.yearly} margin={{ top: 12, left: 8, right: 8, bottom: 24 }}>
               <defs>
                 <linearGradient id="contributions" x1="0" x2="0" y1="0" y2="1">
                   <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.5} />
@@ -110,7 +107,7 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
                 stroke="#0f172a"
                 strokeDasharray="4 4"
                 strokeWidth={1.5}
-                label={{ value: "Stop contributing", position: "top", fill: "#0f172a", fontSize: 12, dy: 8 }}
+                label={{ value: "Contributions stop", position: "top", fill: "#0f172a", fontSize: 12, dy: 8 }}
               />
               <RechartTooltip
                 cursor={{ stroke: "#94a3b8", strokeDasharray: 4 }}
@@ -148,8 +145,8 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        <p className="explain-row mt-4 text-sm leading-relaxed text-slate-600">
-          Starting at {data.startingAge}, you contribute until {data.contributionEndAge}, then let it grow.
+        <p className="explain-row mt-2 text-sm leading-relaxed text-slate-600">
+          Start at {data.startingAge}. Contribute until {data.contributionEndAge}. Then let it compound.
         </p>
       </div>
 
