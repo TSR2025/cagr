@@ -2,12 +2,14 @@
 
 import {
   Area,
+  AreaChart,
   CartesianGrid,
+  ReferenceArea,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip as RechartTooltip,
   XAxis,
-  YAxis,
-  AreaChart
+  YAxis
 } from "recharts";
 import { ProjectionResult } from "@/lib/calculations/calculateProjection";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
@@ -26,17 +28,6 @@ interface GrowthChartProps {
 export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onContributionEndAgeChange }: GrowthChartProps) {
   const [isPulsing, setIsPulsing] = useState(false);
 
-  const ticks = useMemo(() => {
-    const ages: number[] = [];
-    for (let age = data.startingAge; age <= data.projectionEndAge; age += SNAP_INCREMENT_YEARS) {
-      ages.push(age);
-    }
-    if (ages[ages.length - 1] !== data.projectionEndAge) {
-      ages.push(data.projectionEndAge);
-    }
-    return ages;
-  }, [data.projectionEndAge, data.startingAge]);
-
   const xTicks = useMemo(() => {
     return data.yearly
       .filter((record) => (record.age - data.startingAge) % SNAP_INCREMENT_YEARS === 0 || record.year === data.totalYears)
@@ -50,9 +41,7 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
     return () => window.clearTimeout(timeout);
   }, [timePulseSignal]);
 
-  const totalSpan = Math.max(data.projectionEndAge - data.startingAge, 1);
-
-  const ageToPercent = (age: number) => ((age - data.startingAge) / totalSpan) * 100;
+  const stopYear = data.contributionEndAge - data.startingAge;
 
   return (
     <div className={clsx("chart-shell w-full rounded-2xl border border-slate-200 bg-white/90 p-6 pb-8", isPulsing && "time-axis-pulse")}>
@@ -89,7 +78,7 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
       <div className="mt-4 space-y-3">
         <div className="plot-area h-[300px] w-full overflow-hidden pb-10">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data.yearly} margin={{ left: 8, right: 8, bottom: 24 }}>
+            <AreaChart data={data.yearly} margin={{ top: 12, left: 8, right: 8, bottom: 32 }}>
               <defs>
                 <linearGradient id="contributions" x1="0" x2="0" y1="0" y2="1">
                   <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.5} />
@@ -114,6 +103,14 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
                 tick={{ fill: "#475569", fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
+              />
+              <ReferenceArea x1={stopYear} x2={data.totalYears} fill="#0f172a" fillOpacity={0.04} />
+              <ReferenceLine
+                x={stopYear}
+                stroke="#0f172a"
+                strokeDasharray="4 4"
+                strokeWidth={1.5}
+                label={{ value: "Stop contributing", position: "top", fill: "#0f172a", fontSize: 12, dy: 8 }}
               />
               <RechartTooltip
                 cursor={{ stroke: "#94a3b8", strokeDasharray: 4 }}
@@ -151,40 +148,7 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
             </AreaChart>
           </ResponsiveContainer>
         </div>
-
-        <div className="rail-area relative mt-3">
-          <div className="h-[10px] rounded-full bg-slate-100" />
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-end pr-1 text-slate-400">
-            <span className="text-sm">▶</span>
-          </div>
-          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2">
-            {ticks.map((age) => {
-              const percent = ageToPercent(age);
-              const isLast = age === ticks[ticks.length - 1];
-              return (
-                <div key={age} className="absolute" style={{ left: `${percent}%`, transform: "translateX(-50%)" }}>
-                  <div className="h-3 w-[2px] rounded-full bg-slate-400/70" aria-hidden />
-                  <div className="pt-2 text-[11px] font-medium text-slate-600">{isLast ? `${age}+` : age}</div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div
-            className="absolute top-1/2 flex -translate-y-1/2 -translate-x-1/2 flex-col items-center gap-1"
-            style={{ left: `${ageToPercent(data.contributionEndAge)}%` }}
-            aria-label={`Contributions end at age ${data.contributionEndAge}`}
-          >
-            <div className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-semibold text-white shadow-subtle">
-              Contributions end
-            </div>
-            <div className="relative h-4 w-4">
-              <div className="absolute inset-0 rounded-full border-2 border-slate-900 bg-white shadow-md" />
-            </div>
-          </div>
-        </div>
-
-        <p className="explain-row mt-3 text-sm leading-relaxed text-slate-600">
+        <p className="explain-row mt-4 text-sm leading-relaxed text-slate-600">
           Starting at {data.startingAge}, you contribute until {data.contributionEndAge}, then let it grow.
         </p>
       </div>
