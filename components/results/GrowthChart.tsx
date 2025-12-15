@@ -44,21 +44,9 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
   const stopYear = data.contributionEndAge - data.startingAge;
 
   return (
-    <div className={clsx("chart-shell w-full rounded-2xl border border-slate-200 bg-white/90 p-5", isPulsing && "time-axis-pulse")}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <h3 className="text-lg font-semibold text-slate-900">Balance over time</h3>
-          <div className="flex items-center gap-2 text-[12px] font-medium text-slate-600 sm:ml-1">
-            <div className="flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-1 text-slate-600">
-              <span className="h-2 w-2 rounded-full bg-sky-500" aria-hidden />
-              <span>Contributions</span>
-            </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-slate-50 px-2 py-1 text-slate-600">
-              <span className="h-2 w-2 rounded-full bg-amber-400" aria-hidden />
-              <span>Growth</span>
-            </div>
-          </div>
-        </div>
+    <div className={clsx("chart-shell w-full rounded-2xl border border-slate-200 bg-white/90 p-5", isPulsing && "time-axis-pulse")}> 
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <h3 className="text-lg font-semibold text-slate-900">Balance over time</h3>
 
         <TimeControls
           startingAge={data.startingAge}
@@ -73,7 +61,17 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
         />
       </div>
       <div className="mt-3 space-y-2">
-        <div className="plot-area h-[320px] w-full overflow-hidden sm:h-[360px]">
+        <div className="plot-area relative h-[320px] w-full overflow-hidden sm:h-[360px]">
+          <div className="pointer-events-none absolute left-3 top-3 z-10 flex items-center gap-3 text-[12px] font-medium text-slate-600">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-sky-500" aria-hidden />
+              <span>Contributions</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-amber-400" aria-hidden />
+              <span>Growth</span>
+            </div>
+          </div>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data.yearly} margin={{ top: 12, left: 8, right: 8, bottom: 24 }}>
               <defs>
