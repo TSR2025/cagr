@@ -73,7 +73,7 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
         />
       </div>
       <div className="mt-3 space-y-2">
-        <div className="plot-area min-h-[320px] w-full overflow-hidden">
+        <div className="plot-area h-[320px] w-full overflow-hidden sm:h-[360px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data.yearly} margin={{ top: 12, left: 8, right: 8, bottom: 24 }}>
               <defs>
