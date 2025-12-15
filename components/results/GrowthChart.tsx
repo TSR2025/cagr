@@ -15,13 +15,7 @@ import clsx from "clsx";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import {
-  SNAP_INCREMENT_YEARS,
-  clampStartingAge,
-  normalizeContributionEndAge,
-  snapToIncrement,
-  PROJECTION_MAX_AGE
-} from "@/lib/timeModel";
+import { SNAP_INCREMENT_YEARS, clampStartingAge, normalizeContributionEndAge, snapToIncrement } from "@/lib/timeModel";
 
 interface GrowthChartProps {
   data: ProjectionResult;
@@ -86,7 +80,7 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
     const ratio = rect.width === 0 ? 0 : Math.max(0, Math.min(clientX - rect.left, rect.width)) / rect.width;
     const rawAge = data.startingAge + ratio * totalSpan;
     const snapped = snapToIncrement(rawAge, SNAP_INCREMENT_YEARS);
-    const normalized = normalizeContributionEndAge(data.startingAge, snapped);
+    const normalized = normalizeContributionEndAge(data.startingAge, snapped, data.projectionEndAge);
     onContributionEndAgeChange(normalized);
   };
 
@@ -182,9 +176,10 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
           </div>
         </div>
       </div>
-      <div className="mt-4 h-[300px] w-full overflow-hidden">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data.yearly} margin={{ left: 8, right: 8 }}>
+      <div className="mt-4 space-y-3">
+        <div className="plot-area h-[300px] w-full overflow-hidden pb-10">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data.yearly} margin={{ left: 8, right: 8, bottom: 24 }}>
             <defs>
               <linearGradient id="contributions" x1="0" x2="0" y1="0" y2="1">
                 <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.5} />
@@ -243,12 +238,11 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
               strokeWidth={2}
               name="Growth"
             />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
 
-      <div className="mt-6 space-y-2">
-        <div className="relative" ref={railRef}>
+        <div className="rail-area relative mt-3" ref={railRef}>
           <div className="h-[10px] rounded-full bg-slate-100" />
           <div className="pointer-events-none absolute inset-0 flex items-center justify-end pr-1 text-slate-400">
             <span className="text-sm">▶</span>
@@ -270,7 +264,7 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
             role="slider"
             aria-label="Contribution end age"
             aria-valuemin={data.startingAge + 5}
-            aria-valuemax={PROJECTION_MAX_AGE}
+            aria-valuemax={data.projectionEndAge}
             aria-valuenow={data.contributionEndAge}
             tabIndex={0}
             className={clsx(
@@ -285,7 +279,8 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
               event.preventDefault();
               const next = normalizeContributionEndAge(
                 data.startingAge,
-                data.contributionEndAge + direction * SNAP_INCREMENT_YEARS
+                data.contributionEndAge + direction * SNAP_INCREMENT_YEARS,
+                data.projectionEndAge
               );
               onContributionEndAgeChange(next);
             }}
@@ -300,7 +295,7 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
           </div>
         </div>
 
-        <p className="text-sm text-slate-600">
+        <p className="explain-row mt-3 text-sm leading-relaxed text-slate-600">
           Starting at {data.startingAge}, you contribute until {data.contributionEndAge}, then let it grow.
         </p>
       </div>

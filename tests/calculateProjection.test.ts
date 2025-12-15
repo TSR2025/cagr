@@ -20,8 +20,10 @@ test("calculates projection with principal only", () => {
     boosts: []
   };
 
+  const normalized = normalizeTimeModel(principalOnly.startingAge, principalOnly.contributionEndAge);
   const result = calculateProjection(principalOnly);
-  const expected = principalOnly.initialDeposit * Math.pow(1 + principalOnly.interestRate / 100, 30);
+  const expected =
+    principalOnly.initialDeposit * Math.pow(1 + principalOnly.interestRate / 100, normalized.totalYears);
 
   expect(result.finalBalance).toBeCloseTo(expected, 2);
   expect(result.totalContributions).toBeCloseTo(principalOnly.initialDeposit);
