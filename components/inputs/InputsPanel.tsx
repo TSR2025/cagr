@@ -10,12 +10,8 @@ import { TooltipIcon } from "./TooltipIcon";
 import clsx from "clsx";
 import { Inputs } from "@/lib/calculations/calculateProjection";
 import { ContributionSelector } from "./ContributionSelector";
-import { DEFAULT_CURRENT_AGE, deriveEndAges, sanitizeAge } from "@/lib/utils/sanitizeAge";
 
 const INTEREST_RATE_OPTIONS = [3, 5, 7, 10];
-const CONTRIBUTE_YEAR_OPTIONS = [10, 20, 30];
-const PROJECT_YEAR_OPTIONS = [20, 30, 40];
-const MAX_PROJECT_YEARS = Math.max(...PROJECT_YEAR_OPTIONS);
 const EASING = "cubic-bezier(0.2, 0.9, 0.2, 1)";
 const INITIAL_PRESET_STOPS = [0, 1000, 5000, 10000, 25000, 50000, 100000, 250000, 1000000];
 
@@ -35,10 +31,9 @@ const findNearestPresetIndex = (value: number) => {
 interface InputsPanelProps {
   inputs: Inputs;
   onChange: (inputs: Inputs) => void;
-  onTimeCalibrated?: () => void;
 }
 
-export function InputsPanel({ inputs, onChange, onTimeCalibrated }: InputsPanelProps) {
+export function InputsPanel({ inputs, onChange }: InputsPanelProps) {
   const [draft, setDraft] = useState<Inputs>(inputs);
 
   useEffect(() => {
@@ -52,16 +47,6 @@ export function InputsPanel({ inputs, onChange, onTimeCalibrated }: InputsPanelP
 
   const updateField = <K extends keyof Inputs>(key: K, value: Inputs[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }));
-  };
-  const showDurationWarning = draft.projectYears < draft.contributeYears;
-  const { endAge, contribEndAge } = deriveEndAges(
-    draft.currentAge,
-    draft.contributeYears,
-    draft.projectYears
-  );
-
-  const handleTimeInteraction = () => {
-    onTimeCalibrated?.();
   };
 
   return (
@@ -93,123 +78,6 @@ export function InputsPanel({ inputs, onChange, onTimeCalibrated }: InputsPanelP
         </div>
 
         <div className="space-y-4 rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-subtle">
-          <SectionHeader
-            title="Time Horizon"
-            tooltip="Set how long you plan to contribute and how far out to project your balance."
-          />
-          <div className="space-y-3">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-1">
-                <Label className="text-sm font-medium text-slate-700" htmlFor="current-age">
-                  Current age
-                </Label>
-                <p className="text-xs text-slate-500">Used to show how old you’ll be at each milestone</p>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  aria-label="Decrease current age"
-                  onClick={() => {
-                    handleTimeInteraction();
-                    const nextAge = sanitizeAge(draft.currentAge - 1, draft.currentAge);
-                    updateField("currentAge", nextAge);
-                  }}
-                >
-                  −
-                </Button>
-                <Input
-                  id="current-age"
-                  type="number"
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={draft.currentAge}
-                  onChange={(event) => {
-                    handleTimeInteraction();
-                    const nextAge = sanitizeAge(event.target.value, DEFAULT_CURRENT_AGE);
-                    updateField("currentAge", nextAge);
-                  }}
-                  onBlur={handleTimeInteraction}
-                  className="w-20 text-center"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  aria-label="Increase current age"
-                  onClick={() => {
-                    handleTimeInteraction();
-                    const nextAge = sanitizeAge(draft.currentAge + 1, draft.currentAge);
-                    updateField("currentAge", nextAge);
-                  }}
-                >
-                  +
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-slate-700">Contribute for (years)</Label>
-              <div className="flex gap-2" role="group" aria-label="Contribute for (years)">
-                {CONTRIBUTE_YEAR_OPTIONS.map((option) => {
-                  const isSelected = draft.contributeYears === option;
-
-                  return (
-                    <Button
-                      key={option}
-                      type="button"
-                      variant={isSelected ? "secondary" : "outline"}
-                      className="flex-1"
-                      aria-pressed={isSelected}
-                      onClick={() => updateField("contributeYears", option)}
-                    >
-                      {option}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-slate-700">Project over (years)</Label>
-              <div className="flex gap-2" role="group" aria-label="Project over (years)">
-                {PROJECT_YEAR_OPTIONS.map((option) => {
-                  const isSelected = draft.projectYears === option;
-
-                  return (
-                    <Button
-                      key={option}
-                      type="button"
-                      variant={isSelected ? "secondary" : "outline"}
-                      className="flex-1"
-                      aria-pressed={isSelected}
-                      onClick={() => {
-                        handleTimeInteraction();
-                        updateField("projectYears", option);
-                      }}
-                    >
-                      {option}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <TimelineBar contributeYears={draft.contributeYears} projectYears={draft.projectYears} />
-            {showDurationWarning && (
-              <p className="text-xs text-amber-600">Projection horizon is shorter than the contribution period.</p>
-            )}
-            <p className="text-xs text-slate-600">
-              You’ll be {endAge} at the end of this projection{contribEndAge !== endAge ? `. Contributions stop at age ${contribEndAge}.` : "."}
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-3 rounded-2xl border border-slate-100 bg-white/60 p-3 shadow-sm">
           <SectionHeader
             title="Assumptions"
             tooltip="Average annual return you expect to earn. Returns are annualized; contributions are applied monthly."
@@ -496,57 +364,3 @@ function InitialInvestmentSlider({ value, onChange }: InitialInvestmentSliderPro
   );
 }
 
-interface TimelineBarProps {
-  contributeYears: number;
-  projectYears: number;
-}
-
-function TimelineBar({ contributeYears, projectYears }: TimelineBarProps) {
-  const totalYears = projectYears;
-  const contributionYears = Math.min(contributeYears, projectYears);
-  const growthOnlyYears = Math.max(totalYears - contributionYears, 0);
-
-  const projectWidth = (totalYears / MAX_PROJECT_YEARS) * 100;
-  const contributionWidth = totalYears ? Math.min((contributionYears / totalYears) * 100, 100) : 0;
-
-  const ariaLabelParts = [] as string[];
-  if (contributionYears) ariaLabelParts.push(`${contributionYears} years contributing`);
-  if (growthOnlyYears) ariaLabelParts.push(`${growthOnlyYears} years growing`);
-  const ariaLabel = ariaLabelParts.length ? ariaLabelParts.join(", ") : `${totalYears} year projection`;
-
-  return (
-    <div className="space-y-2">
-      <div className="relative flex cursor-default flex-col gap-2" aria-label={ariaLabel}>
-        <div className="h-2 w-full rounded-full bg-slate-100">
-          <div
-            className="relative h-2 rounded-full bg-slate-200"
-            style={{ width: `${projectWidth}%`, transition: "width 200ms ease-out" }}
-          >
-            <div
-              className="absolute left-0 top-0 h-2 rounded-full bg-slate-700"
-              style={{ width: `${contributionWidth}%`, transition: "width 180ms ease-out" }}
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-1 text-xs text-slate-600">
-          <div className="font-medium text-slate-700">{`Total projection: ${totalYears} years`}</div>
-
-          <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
-            {growthOnlyYears === 0 && contributionYears ? (
-              <span className="whitespace-nowrap">{`${totalYears} years contributions + growth`}</span>
-            ) : contributionYears === 0 && growthOnlyYears ? (
-              <span className="whitespace-nowrap">{`${totalYears} years growth only`}</span>
-            ) : contributionYears && growthOnlyYears ? (
-              <>
-                <span className="whitespace-nowrap">{`${contributionYears} years contributions + growth`}</span>
-                <span aria-hidden="true">→</span>
-                <span className="whitespace-nowrap">{`${growthOnlyYears} years growth only`}</span>
-              </>
-            ) : null}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
