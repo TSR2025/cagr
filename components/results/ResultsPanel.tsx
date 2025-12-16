@@ -4,26 +4,22 @@ import { useState } from "react";
 import { ProjectionResult } from "@/lib/calculations/calculateProjection";
 import { ChartGate } from "../ChartGate";
 import { ExportButton } from "./ExportButton";
-import { SummaryStats } from "./SummaryStats";
 import { GrowthChart } from "./GrowthChart";
 import { MilestoneTable } from "./MilestoneTable";
 import { FullBreakdownTable } from "./FullBreakdownTable";
 import { ExpandToggle } from "./ExpandToggle";
+import { OptionsStrip } from "./OptionsStrip";
 
 interface ResultsPanelProps {
   data: ProjectionResult;
   isTimeCalibrated: boolean;
   timePulseSignal: number;
-  onStartingAgeChange: (age: number) => void;
-  onContributionEndAgeChange: (age: number) => void;
 }
 
 export function ResultsPanel({
   data,
   isTimeCalibrated,
-  timePulseSignal,
-  onStartingAgeChange,
-  onContributionEndAgeChange
+  timePulseSignal
 }: ResultsPanelProps) {
   const [expanded, setExpanded] = useState(false);
 
@@ -37,14 +33,9 @@ export function ResultsPanel({
         <ExportButton data={data} />
       </div>
 
-      <SummaryStats data={data} />
+      <OptionsStrip data={data} />
       <ChartGate isLocked={!isTimeCalibrated}>
-        <GrowthChart
-          data={data}
-          timePulseSignal={timePulseSignal}
-          onStartingAgeChange={onStartingAgeChange}
-          onContributionEndAgeChange={onContributionEndAgeChange}
-        />
+        <GrowthChart data={data} timePulseSignal={timePulseSignal} />
       </ChartGate>
       <MilestoneTable data={data} />
 

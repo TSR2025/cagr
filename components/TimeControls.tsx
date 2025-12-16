@@ -65,13 +65,13 @@ export function TimeControls({
   }, [contributionYears, maxAge, onStopContributingAgeChange, startingAge]);
 
   return (
-    <div className={clsx("flex min-w-[260px] flex-col gap-2 text-[13px] text-slate-900", className)}>
-      <p className="text-[12px] font-semibold text-slate-500">When you invest</p>
+    <div className={clsx("flex min-w-[260px] flex-col gap-4 text-sm text-slate-900", className)}>
+      <p className="text-sm font-medium text-slate-600">When you invest</p>
 
-      <div className="space-y-3 rounded-xl border border-slate-200/90 bg-white/80 p-3 shadow-subtle">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-[13px] font-medium text-slate-700">Start at age</p>
-          <div className="flex items-center justify-end gap-1.5">
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <p className="text-[13px] font-medium text-slate-700">Start age</p>
+          <div className="flex items-center gap-2">
             <Button
               type="button"
               variant="outline"
@@ -96,7 +96,7 @@ export function TimeControls({
                   handleStartingBlur();
                 }
               }}
-              className="h-8 w-[88px] rounded-md px-2 text-center text-sm"
+              className="h-9 w-[86px] rounded-md px-2 text-center text-sm"
             />
             <Button
               type="button"
@@ -111,7 +111,7 @@ export function TimeControls({
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           <p className="text-[13px] font-medium text-slate-700">Contribute for</p>
           <div className="grid grid-cols-2 gap-2">
             {DURATION_OPTIONS.map((duration) => {
@@ -125,11 +125,12 @@ export function TimeControls({
                   onClick={() => handleDurationSelect(duration)}
                   className="h-10 w-full justify-center text-sm"
                 >
-                  {duration} years
+                  {duration}
                 </Button>
               );
             })}
           </div>
+          <p className="text-[12px] text-slate-500">years</p>
         </div>
       </div>
     </div>
