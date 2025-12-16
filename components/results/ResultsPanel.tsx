@@ -4,11 +4,11 @@ import { useState } from "react";
 import { ProjectionResult } from "@/lib/calculations/calculateProjection";
 import { ChartGate } from "../ChartGate";
 import { ExportButton } from "./ExportButton";
-import { SummaryStats } from "./SummaryStats";
 import { GrowthChart } from "./GrowthChart";
 import { MilestoneTable } from "./MilestoneTable";
 import { FullBreakdownTable } from "./FullBreakdownTable";
 import { ExpandToggle } from "./ExpandToggle";
+import { OptionsStrip } from "./OptionsStrip";
 
 interface ResultsPanelProps {
   data: ProjectionResult;
@@ -36,8 +36,7 @@ export function ResultsPanel({
         </div>
         <ExportButton data={data} />
       </div>
-
-      <SummaryStats data={data} />
+      <OptionsStrip data={data} />
       <ChartGate isLocked={!isTimeCalibrated}>
         <GrowthChart
           data={data}
