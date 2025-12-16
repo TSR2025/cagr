@@ -7,7 +7,8 @@ import {
 } from "@/lib/calculations/calculateProjection";
 import { InputsPanel } from "@/components/inputs/InputsPanel";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
-import { normalizeTimeModel } from "@/lib/timeModel";
+import { MIN_AGE, normalizeTimeModel } from "@/lib/timeModel";
+import { TimeControls } from "@/components/TimeControls";
 
 const defaultInputs: Inputs = {
   initialDeposit: 10000,
@@ -75,19 +76,28 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 lg:py-12">
-      <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
-        <div className="order-2 lg:order-1">
+      <div className="grid gap-6 lg:grid-cols-[380px_1fr] xl:grid-cols-[400px_1fr]">
+        <div className="order-2 space-y-6 lg:order-1">
+          <TimeControls
+            startingAge={projection.startingAge}
+            onStartingAgeChange={handleStartingAgeChange}
+            stopContributingAge={projection.contributionEndAge}
+            onStopContributingAgeChange={handleContributionEndAgeChange}
+            minAge={MIN_AGE}
+            maxAge={projection.projectionEndAge}
+            className="sticky top-6"
+          />
           <InputsPanel inputs={inputs} onChange={setInputs} />
         </div>
         <div className="order-1 lg:order-2">
-        <ResultsPanel
-          data={projection}
-          onStartingAgeChange={handleStartingAgeChange}
-          onContributionEndAgeChange={handleContributionEndChange}
-          isTimeCalibrated={isTimeCalibrated}
-          timePulseSignal={timePulseSignal}
-        />
-      </div>
+          <ResultsPanel
+            data={projection}
+            onStartingAgeChange={handleStartingAgeChange}
+            onContributionEndAgeChange={handleContributionEndAgeChange}
+            isTimeCalibrated={isTimeCalibrated}
+            timePulseSignal={timePulseSignal}
+          />
+        </div>
       </div>
     </main>
   );

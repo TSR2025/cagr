@@ -15,8 +15,7 @@ import { ProjectionResult } from "@/lib/calculations/calculateProjection";
 import { formatCurrency } from "@/lib/utils/formatCurrency";
 import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
-import { MIN_AGE, MIN_CONTRIB_WINDOW_YEARS, SNAP_INCREMENT_YEARS } from "@/lib/timeModel";
-import { TimeControls } from "../TimeControls";
+import { SNAP_INCREMENT_YEARS } from "@/lib/timeModel";
 
 interface GrowthChartProps {
   data: ProjectionResult;
@@ -47,18 +46,6 @@ export function GrowthChart({ data, timePulseSignal, onStartingAgeChange, onCont
     <div className={clsx("chart-shell w-full rounded-2xl border border-slate-200 bg-white/90 p-5", isPulsing && "time-axis-pulse")}> 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h3 className="text-lg font-semibold text-slate-900">Balance over time</h3>
-
-        <TimeControls
-          startingAge={data.startingAge}
-          onStartingAgeChange={onStartingAgeChange}
-          stopContributingAge={data.contributionEndAge}
-          onStopContributingAgeChange={onContributionEndAgeChange}
-          minAge={MIN_AGE}
-          maxAge={data.projectionEndAge}
-          minWindowYears={MIN_CONTRIB_WINDOW_YEARS}
-          snapIncrementYears={SNAP_INCREMENT_YEARS}
-          className="w-full sm:w-auto"
-        />
       </div>
       <div className="mt-3 space-y-2">
         <div className="plot-area relative h-[320px] w-full overflow-hidden sm:h-[360px]">
