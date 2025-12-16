@@ -9,22 +9,36 @@ import { MilestoneTable } from "./MilestoneTable";
 import { FullBreakdownTable } from "./FullBreakdownTable";
 import { ExpandToggle } from "./ExpandToggle";
 import { OptionsStrip } from "./OptionsStrip";
+import { TimeControls } from "../TimeControls";
+
+interface TimeControlConfig {
+  startingAge: number;
+  onStartingAgeChange: (next: number) => void;
+  stopContributingAge: number;
+  onStopContributingAgeChange: (next: number) => void;
+  minAge: number;
+  maxAge: number;
+  minWindowYears: number;
+  snapIncrementYears: number;
+}
 
 interface ResultsPanelProps {
   data: ProjectionResult;
   isTimeCalibrated: boolean;
   timePulseSignal: number;
+  timeControls: TimeControlConfig;
 }
 
 export function ResultsPanel({
   data,
   isTimeCalibrated,
-  timePulseSignal
+  timePulseSignal,
+  timeControls
 }: ResultsPanelProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-slate-500">Results</p>
@@ -33,7 +47,12 @@ export function ResultsPanel({
         <ExportButton data={data} />
       </div>
 
-      <OptionsStrip data={data} />
+      <div className="space-y-5 border-b border-slate-200/80 pb-5">
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,_1.1fr)_minmax(0,_1fr)] lg:items-start lg:gap-5">
+          <TimeControls {...timeControls} className="lg:max-w-xl" />
+          <OptionsStrip data={data} />
+        </div>
+      </div>
       <ChartGate isLocked={!isTimeCalibrated}>
         <GrowthChart data={data} timePulseSignal={timePulseSignal} />
       </ChartGate>
