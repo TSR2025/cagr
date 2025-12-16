@@ -65,20 +65,20 @@ export function TimeControls({
   }, [contributionYears, maxAge, onStopContributingAgeChange, startingAge]);
 
   return (
-    <div className={clsx("flex min-w-[260px] flex-col gap-2 text-[13px] text-slate-900", className)}>
-      <p className="text-[12px] font-semibold text-slate-500">When you invest</p>
+    <div className={clsx("flex flex-col gap-3 text-sm text-slate-900", className)}>
+      <p className="text-sm font-semibold text-slate-700">When you invest</p>
 
-      <div className="space-y-3 rounded-xl border border-slate-200/90 bg-white/80 p-3 shadow-subtle">
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-[13px] font-medium text-slate-700">Start at age</p>
-          <div className="flex items-center justify-end gap-1.5">
+      <div className="space-y-3">
+        <div className="space-y-1.5">
+          <p className="text-[13px] font-medium text-slate-700">Start age</p>
+          <div className="flex items-center gap-1.5">
             <Button
               type="button"
               variant="outline"
               size="icon"
               aria-label="Decrease starting age"
               onClick={() => commitStartingAge(Number(startingDraft) - 1)}
-              className="h-8 w-8 rounded-md text-base"
+              className="h-7 w-7 rounded-md px-0 text-sm"
             >
               −
             </Button>
@@ -96,7 +96,7 @@ export function TimeControls({
                   handleStartingBlur();
                 }
               }}
-              className="h-8 w-[88px] rounded-md px-2 text-center text-sm"
+              className="h-8 w-[72px] rounded-md px-2 text-center text-sm"
             />
             <Button
               type="button"
@@ -104,7 +104,7 @@ export function TimeControls({
               size="icon"
               aria-label="Increase starting age"
               onClick={() => commitStartingAge(Number(startingDraft) + 1)}
-              className="h-8 w-8 rounded-md text-base"
+              className="h-7 w-7 rounded-md px-0 text-sm"
             >
               +
             </Button>
@@ -113,7 +113,7 @@ export function TimeControls({
 
         <div className="space-y-2">
           <p className="text-[13px] font-medium text-slate-700">Contribute for</p>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-1.5">
             {DURATION_OPTIONS.map((duration) => {
               const isSelected = duration === selectedDuration;
               return (
@@ -123,13 +123,17 @@ export function TimeControls({
                   variant={isSelected ? "secondary" : "outline"}
                   aria-pressed={isSelected}
                   onClick={() => handleDurationSelect(duration)}
-                  className="h-10 w-full justify-center text-sm"
+                  className={clsx(
+                    "h-9 w-full justify-center text-[13px] font-medium",
+                    isSelected ? "ring-1 ring-slate-300" : "text-slate-600"
+                  )}
                 >
-                  {duration} years
+                  {duration}
                 </Button>
               );
             })}
           </div>
+          <p className="text-[12px] text-slate-500">years</p>
         </div>
       </div>
     </div>
